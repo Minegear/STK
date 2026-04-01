@@ -507,25 +507,40 @@ function goToHome() {
 
 function sendDataToGoogle(user, date, exo, temps) {
     const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfyHVDqMvl_SEkjbFy74LSONtsZCcO1Xuu4GGFrZ4EqF07tJQ/formResponse";
-    
-    const params = new URLSearchParams();
-    params.append("entry.1475131332", user);
-    params.append("entry.464227689", date);
-    params.append("entry.723616511", exo);
-    params.append("entry.2104479172", temps);
 
-    fetch(formURL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: params.toString()
-    })
-    .then(() => {
-        console.log("Données envoyées avec la méthode URL !");
-    })
-    .catch((error) => {
-        console.error("Erreur d'envoi :", error);
-    });
+    const iframe = document.createElement("iframe");
+    iframe.name = "hidden_iframe";
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+
+    const form = document.createElement("form");
+    form.action = formURL;
+    form.method = "POST";
+    form.target = "hidden_iframe";
+    form.style.display = "none";
+
+    const fields = {
+        "entry.1475131332": user,
+        "entry.464227689": date,
+        "entry.723616511": exo,
+        "entry.2104479172": temps
+    };
+
+    for (const [key, value] of Object.entries(fields)) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    
+    console.log("Données envoyées via formulaire invisible !");
+
+    setTimeout(() => {
+        document.body.removeChild(form);
+        document.body.removeChild(iframe);
+    }, 2000);
 }
