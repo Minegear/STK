@@ -1,0 +1,674 @@
+{
+  "categories": [
+    {
+      "id": "cat_qui_est_ce",
+      "nom": "Qui est-ce ? (Élimination)",
+      "type": "grille_elimination",
+      "config": { "colonnes": 6, "lignes": 4 },
+      "banque_animaux": [
+            {"id": 0, "nom": "Chat", "img": "assets/images/qui_est_ce/chat.jpg"},
+            {"id": 1, "nom": "Chèvre", "img": "assets/images/qui_est_ce/chevre.jpg"},
+            {"id": 2, "nom": "Paon", "img": "assets/images/qui_est_ce/paon.jpg"},
+            {"id": 3, "nom": "Pieuvre", "img": "assets/images/qui_est_ce/pieuvre.jpg"},
+            {"id": 4, "nom": "Rhinocéros", "img": "assets/images/qui_est_ce/rhinoceros.jpg"},
+            {"id": 5, "nom": "Girafe", "img": "assets/images/qui_est_ce/girafe.jpg"},
+            {"id": 6, "nom": "Gazelle", "img": "assets/images/qui_est_ce/gazelle.jpeg"},
+            {"id": 7, "nom": "Mouette", "img": "assets/images/qui_est_ce/mouette.jpg"},
+            {"id": 8, "nom": "Vache", "img": "assets/images/qui_est_ce/vache.jpg"},
+            {"id": 9, "nom": "Lion", "img": "assets/images/qui_est_ce/lion.jpg"},
+            {"id": 10, "nom": "Perroquet", "img": "assets/images/qui_est_ce/perroquet.jpg"},
+            {"id": 11, "nom": "Crabe", "img": "assets/images/qui_est_ce/crabe.jpg"},
+            {"id": 12, "nom": "Hippopotame", "img": "assets/images/qui_est_ce/hippopotame.jpg"},
+            {"id": 13, "nom": "Poisson", "img": "assets/images/qui_est_ce/poisson.jpg"},
+            {"id": 14, "nom": "Pivert", "img": "assets/images/qui_est_ce/pivert.jpg"},
+            {"id": 15, "nom": "Elephant", "img": "assets/images/qui_est_ce/elephant.jpg"},
+            {"id": 16, "nom": "Serpent", "img": "assets/images/qui_est_ce/serpent.jpg"},
+            {"id": 17, "nom": "Pigeon", "img": "assets/images/qui_est_ce/pigeon.jpg"},
+            {"id": 18, "nom": "Toucan", "img": "assets/images/qui_est_ce/toucan.jpg"},
+            {"id": 19, "nom": "Cobra", "img": "assets/images/qui_est_ce/cobra.jpg"},
+            {"id": 20, "nom": "Zèbre", "img": "assets/images/qui_est_ce/zebre.jpg"},
+            {"id": 21, "nom": "Dauphin", "img": "assets/images/qui_est_ce/dauphin.jpg"},
+            {"id": 22, "nom": "Guepard", "img": "assets/images/qui_est_ce/guepard.jpg"},
+            {"id": 23, "nom": "Taupe", "img": "assets/images/qui_est_ce/taupe.jpg"}
+        ],
+      "exercices": [
+        {
+          "id": "qec_rhinoceros",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/voler_pas_savoir.mp4",
+              "indices_a_retirer": [2, 10, 14, 17, 18]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/animal_taches_ya_pas.mp4",
+              "indices_a_retirer": [5, 8, 22]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/griffes_longues_ya_pas.mp4",
+              "indices_a_retirer": [0, 9, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/animal_corps_couleur_unique.mp4",
+              "indices_a_retirer": [1, 3, 6, 7, 11, 13, 19, 20]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/patte_elephant_ya.mp4",
+              "indices_a_retirer": [16, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/marcher_elephant_corne_nez.mp4",
+              "indices_a_retirer": [12, 15]
+            }
+          ]
+        },
+        {
+          "id": "qec_elephant",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/animal_corps_couleur_unique.mp4",
+              "indices_a_retirer": [1, 2, 3, 4, 6, 7, 8, 9, 11, 14, 17, 18, 19, 20, 22]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/poils_ya_pas.mov",
+              "indices_a_retirer": [0, 10, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/marcher_prof_elephant.mp4",
+              "indices_a_retirer": [12, 16, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/petites_oreilles_rondes_ya_pas.mov",
+              "indices_a_retirer": [5, 13]
+            }
+          ]
+        },
+        {
+          "id": "qec_zebre",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/tete_animal_queue_longue_la.mov",
+              "indices_a_retirer": [2, 3, 7, 10, 11, 13, 14, 16, 17, 18, 19, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/corps_couleur_unique_ya_pas.mov",
+              "indices_a_retirer": [0, 4, 12, 15, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/rayures_la.mov",
+              "indices_a_retirer": [1, 5, 6, 8, 9, 22]
+            }
+          ]
+        }
+      ]
+    },
+    {
+        "id": "cat_vrai_faux_image",
+        "nom": "Vocabulaire LSF",
+        "type": "video_to_image",
+        "questions": [
+        {
+            "id": "vfi_bol",
+            "video": "assets/videos/vrai_faux/Bol_de_riz.mov",
+            "options": [
+                "assets/images/vrai_faux/riz_baguettes_bol.png",
+                "assets/images/vrai_faux/riz_cuiller_bol.png",
+                "assets/images/vrai_faux/riz_baguettes_assiette.png"
+            ],
+            "reponse": 0
+        },
+        {
+            "id": "vfi_brochette",
+            "video": "assets/videos/vrai_faux/Brochette.mov",
+            "options": [
+            "assets/images/vrai_faux/mais.png",
+            "assets/images/vrai_faux/brochettes.png",
+            "assets/images/vrai_faux/pasteque.png"
+            ],
+            "reponse": 1
+        },
+        {
+            "id": "vfi_verre",
+            "video": "assets/videos/vrai_faux/Verre.mov",
+            "options": [
+                "assets/images/vrai_faux/verre_champagne.png",
+                "assets/images/vrai_faux/verre_liqueur.png",
+                "assets/images/vrai_faux/verre_eau.png"
+            ],
+            "reponse": 2
+        },
+        {
+            "id": "vfi_cerise",
+            "video": "assets/videos/vrai_faux/cerise.MOV",
+            "options": [
+                "assets/images/vrai_faux/cerises.png",
+                "assets/images/vrai_faux/abricots.png",
+                "assets/images/vrai_faux/nectarines.png"
+            ],
+            "reponse": 0
+        },
+        {
+            "id": "vfi_tomcerise",
+            "video": "assets/videos/vrai_faux/Tomates_cerises.MOV",
+            "options": [
+                "assets/images/vrai_faux/pommes.png",
+                "assets/images/vrai_faux/chips.png",
+                "assets/images/vrai_faux/tomates_cerises.png"
+            ],
+            "reponse": 2
+        },
+        {
+            "id": "vfi_paille",
+            "video": "assets/videos/vrai_faux/Paille.mov",
+            "options": [
+                "assets/images/vrai_faux/paille_bol.png",
+                "assets/images/vrai_faux/paille_verre.png",
+                "assets/images/vrai_faux/tasse_cafe.png"
+            ],
+            "reponse": 1
+        },
+        {
+            "id": "vfi_hamburger",
+            "video": "assets/videos/vrai_faux/Hamburger.mov",
+            "options": [
+                "assets/images/vrai_faux/hamburger.png",
+                "assets/images/vrai_faux/croque_monsieur.png",
+                "assets/images/vrai_faux/pomme.png"
+            ],
+            "reponse": 0
+        },
+        {
+            "id": "vfi_mikado",
+            "video": "assets/videos/vrai_faux/Mikado.mov",
+            "options": [
+                "assets/images/vrai_faux/paquet_mikado.png",
+                "assets/images/vrai_faux/paquet_belvita.png",
+                "assets/images/vrai_faux/boite_haribo.png"
+            ],
+            "reponse": 0
+        },
+        {
+            "id": "vfi_biscuits",
+            "video": "assets/videos/vrai_faux/Biscuits.mov",
+            "options": [
+                "assets/images/vrai_faux/spaghetti.png",
+                "assets/images/vrai_faux/cookies.png",
+                "assets/images/vrai_faux/biscuits.png"
+            ],
+            "reponse": 2
+        },
+        {
+            "id": "vfi_miel",
+            "video": "assets/videos/vrai_faux/Miel.mov",
+            "options": [
+                "assets/images/vrai_faux/miel_cuiller.png",
+                "assets/images/vrai_faux/miel_ours.png",
+                "assets/images/vrai_faux/miel_doigt.png"
+            ],
+            "reponse": 1
+        }
+        ]
+    },
+    {
+        "id": "cat_vrai_faux_vidéo",
+        "nom": "Vocabulaire LSF",
+        "type": "image_to_video",
+        "questions": [
+        {
+            "id": "vfv_kebab",
+            "image": "assets/images/vrai_faux/kebab.png",
+            "options": [
+                "assets/videos/vrai_faux/Hamburger.mov",
+                "assets/videos/vrai_faux/Kebab.MOV",
+                "assets/videos/vrai_faux/panini.mov"
+            ],
+            "reponse": 1
+        },
+        {
+            "id": "vfv_sucette",
+            "image": "assets/images/vrai_faux/sucette.png",
+            "options": [
+                "assets/videos/vrai_faux/Glace.MOV",
+                "assets/videos/vrai_faux/Poulet.mov",
+                "assets/videos/vrai_faux/Sucette.MOV"
+            ],
+            "reponse": 2
+        },
+        {
+            "id": "vfv_biere",
+            "image": "assets/images/vrai_faux/biere.png",
+            "options": [
+                "assets/videos/vrai_faux/Biere.mov",
+                "assets/videos/vrai_faux/Bol.mov",
+                "assets/videos/vrai_faux/Verre.mov"
+            ],
+            "reponse": 0
+        },
+        {
+            "id": "vfv_pizza",
+            "image": "assets/images/vrai_faux/pizza.png",
+            "options": [
+                "assets/videos/vrai_faux/Galette_frangipane.mov",
+                "assets/videos/vrai_faux/Pizza.mov",
+                "assets/videos/vrai_faux/spaghetti_avec_doigt.mov"
+            ],
+            "reponse": 1
+        },
+        {
+            "id": "vfv_avocat",
+            "image": "assets/images/vrai_faux/avocat.png",
+            "options": [
+                "assets/videos/vrai_faux/Avocat.MOV",
+                "assets/videos/vrai_faux/Kiwi.MOV",
+                "assets/videos/vrai_faux/Pamplemousse.MOV"
+            ],
+            "reponse": 0
+        }
+    ]
+    },
+    {
+        "id": "cat_anaphore_lsf",
+        "nom": "Anaphore",
+        "type": "video_to_videos",
+        "video_contexte": "assets/videos/anaphore/Recit-1-anaphore.mov",
+        "consignes": "assets/videos/anaphore/consigne_LSF.mp4",
+        "questions": [
+            {
+                "id": "ana_lsf_pouce",
+                "video": "assets/videos/anaphore/Pouce_cest_qui.mov",
+                "options": [
+                    "assets/videos/anaphore/Lou.mov",
+                    "assets/videos/anaphore/Julie.mov",
+                    "assets/videos/anaphore/Liam.mov"
+                ],
+                "reponse": 2
+            },
+            {
+                "id": "ana_lsf_index",
+                "video": "assets/videos/anaphore/Index_cest_qui.mov",
+                "options": [
+                    "assets/videos/anaphore/Lou.mov",
+                    "assets/videos/anaphore/Julie.mov",
+                    "assets/videos/anaphore/Liam.mov"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_lsf_majeur",
+                "video": "assets/videos/anaphore/Majeur_cest_qui.mov",
+                "options": [
+                    "assets/videos/anaphore/Lou.mov",
+                    "assets/videos/anaphore/Julie.mov",
+                    "assets/videos/anaphore/Liam.mov"
+                ],
+                "reponse": 1
+            },
+            {
+                "id": "ana_lsf_aide",
+                "video": "assets/videos/anaphore/Quelqu_un_m_aide_cest_qui.mov",
+                "options": [
+                    "assets/videos/anaphore/Lou.mov",
+                    "assets/videos/anaphore/Julie.mov",
+                    "assets/videos/anaphore/Liam.mov"
+                ],
+                "reponse": 2
+            },
+            {
+                "id": "ana_lsf_buisson",
+                "video": "assets/videos/anaphore/Qui_est_derriere_le_buisson.mov",
+                "options": [
+                    "assets/videos/anaphore/Lou.mov",
+                    "assets/videos/anaphore/Julie.mov",
+                    "assets/videos/anaphore/Liam.mov"
+                ],
+                "reponse": 2
+            },
+            {
+                "id": "ana_lsf_voiture",
+                "video": "assets/videos/anaphore/Qui_est_derriere_la_voiture .mov",
+                "options": [
+                    "assets/videos/anaphore/Lou.mov",
+                    "assets/videos/anaphore/Julie.mov",
+                    "assets/videos/anaphore/Liam.mov"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_lsf_toboggan",
+                "video": "assets/videos/anaphore/Qui_est_derriere_le_toboggan.mov",
+                "options": [
+                    "assets/videos/anaphore/Lou.mov",
+                    "assets/videos/anaphore/Milou.mov",
+                    "assets/videos/anaphore/Liam.mov"
+                ],
+                "reponse": 1
+            },
+            {
+                "id": "ana_lsf_arbre",
+                "video": "assets/videos/anaphore/Qui_va_compter_a_larbre.mov",
+                "options": [
+                    "assets/videos/anaphore/Lou.mov",
+                    "assets/videos/anaphore/Julie.mov",
+                    "assets/videos/anaphore/Liam.mov"
+                ],
+                "reponse": 1
+            },
+            {
+                "id": "ana_lsf_chien_ou",
+                "video": "assets/videos/anaphore/1_et_chien_vont_ou.mov",
+                "options": [
+                    "assets/videos/anaphore/toboggan.mov",
+                    "assets/videos/anaphore/buisson.mov",
+                    "assets/videos/anaphore/garage.mov",
+                    "assets/videos/anaphore/arbre.mov"
+                ],
+                "reponse": 1
+            },
+            {
+                "id": "ana_lsf_chien_quoi",
+                "video": "assets/videos/anaphore/2_et_chien_vont_vers_quoi.mov",
+                "options": [
+                    "assets/videos/anaphore/toboggan.mov",
+                    "assets/videos/anaphore/buisson.mov",
+                    "assets/videos/anaphore/garage.mov",
+                    "assets/videos/anaphore/arbre.mov"
+                ],
+                "reponse": 2
+            },
+            {
+                "id": "ana_lsf_velo",
+                "video": "assets/videos/anaphore/velos_tombes_quoi.mov",
+                "options": [
+                    "assets/videos/anaphore/Lou-bis.mov",
+                    "assets/videos/anaphore/voiture.mov",
+                    "assets/videos/anaphore/vélo.mov"
+                ],
+                "reponse": 2
+            },
+            {
+                "id": "ana_lsf_garage",
+                "video": "assets/videos/anaphore/Qui_sont_les_2_personnes_qui_regardent_dans_le_garage.mov",
+                "options": [
+                    "assets/videos/anaphore/Lou-et-Julie.mov",
+                    "assets/videos/anaphore/Liam-et-Julie.mov",
+                    "assets/videos/anaphore/Lou-et-Liam.mov"
+                ],
+                "reponse": 1
+            }
+        ]
+    },
+    {
+        "id": "cat_anaphore_fr>lsf",
+        "nom": "Anaphore",
+        "type": "text_to_videos",
+        "video_contexte": "assets/videos/anaphore/Recit-1-anaphore.mov",
+        "consignes": "assets/videos/anaphore/consigne_pont_francais_LSF.mp4",
+        "questions": [
+            {
+                "id": "ana_fr>lsf_compter",
+                "text": "Lou, son grand frère Liam et sa petite sœur Julie sont dans le jardin. Ils jouent à cache-cache. La plus jeune doit trouver les autres. Elle commence à compter près de l’arbre. ",
+                "options": [
+                    "assets/videos/anaphore/Elle_commence_a_compter_pres_de_l'arbre.mov",
+                    "assets/videos/anaphore/Elle_commence_a_compter_pres_du_buisson.mov",
+                    "assets/videos/anaphore/Ils_commencent_a_compter_pres_de_larbre.mov",
+                    "assets/videos/anaphore/Il_CL_animal_commence_a_compter_pres_de_larbre.mov"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_fr>lsf_milou",
+                "text": "Lou, son grand frère Liam et sa petite sœur Julie sont dans le jardin. Ils jouent à cache-cache. La plus jeune doit trouver les autres. Elle commence à compter près de l’arbre. Son frère court derrière le buisson. Ça lui fait une bonne cachette. Sa sœur va dans le garage et se glisse entre la voiture et les vélos. Sans faire exprès, elle les fait tomber. Julie a fini de compter et elle part à leur recherche. Elle voit bouger quelque chose derrière le toboggan. Mais c’est Milou qui aboie et veut jouer !",
+                "options": [
+                    "assets/videos/anaphore/VID-20251016-WA0005.mp4",
+                    "assets/videos/anaphore/VID-20251016-WA0008.mp4",
+                    "assets/videos/anaphore/VID-20251016-WA0007.mp4"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_fr>lsf_liam",
+                "text": "Lou, son grand frère Liam et sa petite sœur Julie sont dans le jardin. Ils jouent à cache-cache. La plus jeune doit trouver les autres. Elle commence à compter près de l’arbre. Son frère court derrière le buisson. Ça lui fait une bonne cachette. Sa sœur va dans le garage et se glisse entre la voiture et les vélos. Sans faire exprès, elle les fait tomber. Julie a fini de compter et elle part à leur recherche. Elle voit bouger quelque chose derrière le toboggan. Mais c’est Milou qui aboie et veut jouer ! Julie lui dit  : « Aide-moi à les trouver ! Est-ce que tu les as vus près du buisson ? ». Elle y va, accompagnée de son chien, et ils trouvent Liam. ",
+                "options": [
+                    "assets/videos/anaphore/Elle_va_a_larbre_accompagnee_de_son_chien.mov",
+                    "assets/videos/anaphore/Elle_va_au_toboggan_accompagnee_de_son_chien.mov",
+                    "assets/videos/anaphore/Elle_va_au_buisson_accompagnee_de_son_chien.mov"
+                ],
+                "reponse": 2
+            },
+            {
+                "id": "ana_fr>lsf_soeur",
+                "text": "Lou, son grand frère Liam et sa petite sœur Julie sont dans le jardin. Ils jouent à cache-cache. La plus jeune doit trouver les autres. Elle commence à compter près de l’arbre. Son frère court derrière le buisson. Ça lui fait une bonne cachette. Sa sœur va dans le garage et se glisse entre la voiture et les vélos. Sans faire exprès, elle les fait tomber. Julie a fini de compter et elle part à leur recherche. Elle voit bouger quelque chose derrière le toboggan. Mais c’est Milou qui aboie et veut jouer ! Julie lui dit  : « Aide-moi à les trouver ! Est-ce que tu les as vus près du buisson ? ». Elle y va, accompagnée de son chien, et ils trouvent Liam. Ce dernier l’aide à chercher Lou qui semble bien cachée. Ils se dirigent vers le garage. Ils y entrent. Là, ils découvrent leurs vélos par terre. Ils les poussent et trouvent enfin leur sœur. ",
+                "options": [
+                    "assets/videos/anaphore/Ils_la_Lou_poussent.mov",
+                    "assets/videos/anaphore/ils_les_poussent.mov",
+                    "assets/videos/anaphore/Ils_le_poussent.mov",
+                    "assets/videos/anaphore/Ils_la_voiture_poussent.mov"
+                ],
+                "reponse": 1
+            },
+            {
+                "id": "ana_fr>lsf_gouter",
+                "text": "Lou, son grand frère Liam et sa petite sœur Julie sont dans le jardin. Ils jouent à cache-cache. La plus jeune doit trouver les autres. Elle commence à compter près de l’arbre. Son frère court derrière le buisson. Ça lui fait une bonne cachette. Sa sœur va dans le garage et se glisse entre la voiture et les vélos. Sans faire exprès, elle les fait tomber. Julie a fini de compter et elle part à leur recherche. Elle voit bouger quelque chose derrière le toboggan. Mais c’est Milou qui aboie et veut jouer ! Julie lui dit  : « Aide-moi à les trouver ! Est-ce que tu les as vus près du buisson ? ». Elle y va, accompagnée de son chien, et ils trouvent Liam. Ce dernier l’aide à chercher Lou qui semble bien cachée. Ils se dirigent vers le garage. Ils y entrent. Là, ils découvrent leurs vélos par terre. Ils les poussent et trouvent enfin leur sœur. Tout contents de cette bonne partie, ils rentrent goûter. ",
+                "options": [
+                    "assets/videos/anaphore/il_part_heure_du_gouter.mov",
+                    "assets/videos/anaphore/ils_partent_heure_de_gouter.mov",
+                    "assets/videos/anaphore/ils_2_partent_heure_du_gouter.mov"
+                ],
+                "reponse": 1
+            }
+        ]
+    },
+    {
+        "id": "cat_anaphore_lsf>fr",
+        "nom": "Anaphore",
+        "type": "video_to_text",
+        "video_contexte": "assets/videos/anaphore/Recit-1-anaphore.mov",
+        "consignes": "assets/videos/anaphore/consigne_pont_lsf_francais.mp4",
+        "questions": [
+            {
+                "id": "ana_lsf>fr_cachecache",
+                "video": "assets/videos/anaphore/Ils_jouent_a_cache_cache.mov",
+                "options": [
+                    "Ils jouent à cache-cache",
+                    "Il joue à cache-cache",
+                    "Elles jouent à cache-cache"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_lsf>fr_compter",
+                "video": "assets/videos/anaphore/Elle_commence_a_compter.mov",
+                "options": [
+                    "Elle commence à compter",
+                    "Il commence à compter",
+                    "Elles commencent à compter"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_lsf>fr_cachette",
+                "video": "assets/videos/anaphore/ca_lui_fait_une_bonne_cachette.mov",
+                "options": [
+                    "Ça lui fait une bonne cachette",
+                    "Ça leur fait une bonne cachette",
+                    "Julie lui fait une bonne cachette"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_lsf>fr_cache",
+                "video": "assets/videos/anaphore/ca_lui_fait_une_bonne_cachette_bis.mov",
+                "options": [
+                    "Il est bien caché",
+                    "Elle est bien cachée",
+                    "Ils sont bien cachés"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_lsf>fr_tomber",
+                "video": "assets/videos/anaphore/Elle_les_fait_tomber.mov",
+                "options": [
+                    "Elle les fait tomber",
+                    "Elle le fait tomber",
+                    "Elle leur fait tomber",
+                    "Ils les font tomber"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_lsf>fr_tombent",
+                "video": "assets/videos/anaphore/les_velos_tombent.mov",
+                "options": [
+                    "Les vélos tombent",
+                    "Le vélo tombe",
+                    "Elle tombe"
+                ],
+                "reponse": 0
+            }
+        ]
+    },
+    {
+        "id": "cat_anaphore_fr",
+        "nom": "Anaphore",
+        "type": "text_to_text",
+        "video_contexte": "assets/videos/anaphore/Recit-1-anaphore.mov",
+        "texte_contexte": "Lou, son grand frère Liam et sa petite sœur Julie sont dans le jardin. Ils jouent à cache-cache. La plus jeune doit trouver les autres. Elle commence à compter près de l’arbre. Son frère court derrière le buisson. Ça lui fait une bonne cachette. Sa sœur va dans le garage et se glisse entre la voiture et les vélos. Sans faire exprès, elle les fait tomber. Julie a fini de compter et elle part à leur recherche. Elle voit bouger quelque chose derrière le toboggan. Mais c’est Milou qui aboie et veut jouer ! Julie lui dit  : « Aide-moi à les trouver ! Est-ce que tu les as vus près du buisson ? ». Elle y va, accompagnée de son chien, et ils trouvent Liam. Ce dernier l’aide à chercher Lou qui semble bien cachée. Ils se dirigent vers le garage. Ils y entrent. Là, ils découvrent leurs vélos par terre. Ils les poussent et trouvent enfin leur sœur. Tout contents de cette bonne partie, ils rentrent goûter.",
+        "consignes": "assets/videos/anaphore/consigne_pont_lsf_francais.mp4",
+        "questions": [
+            {
+                "id": "ana_fr_ils",
+                "phrase": "Ils jouent à cache-cache",
+                "target": "Ils",
+                "options": [
+                    "Lou, Liam et Julie",
+                    "Julie et le jardin",
+                    "Julie et Liam"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_fr_elle",
+                "phrase": "Elle commence à compter près de l’arbre",
+                "target": "Elle",
+                "options": [
+                    "Lou",
+                    "Liam",
+                    "Julie",
+                    "Milou"
+                ],
+                "reponse": 2
+            },
+            {
+                "id": "ana_fr_ca",
+                "phrase": "Ça lui fait une bonne cachette",
+                "target": "Ça",
+                "options": [
+                    "Buisson",
+                    "Garage",
+                    "Toboggan"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_fr_lui",
+                "phrase": "Ça lui fait une bonne cachette",
+                "target": "Lui",
+                "options": [
+                    "Lou",
+                    "Liam",
+                    "Julie",
+                    "Milou"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_fr_moi",
+                "phrase": "Aide-moi à les trouver",
+                "target": "Moi",
+                "options": [
+                    "Lou",
+                    "Liam",
+                    "Julie",
+                    "Milou"
+                ],
+                "reponse": 1
+            },
+            {
+                "id": "ana_fr_tu",
+                "phrase": "Est-ce que tu les as vus près du buisson",
+                "target": "Tu",
+                "options": [
+                    "Lou",
+                    "Liam",
+                    "Julie",
+                    "Milou"
+                ],
+                "reponse": 2
+            },
+            {
+                "id": "ana_fr_dernier",
+                "phrase": "Ce dernier l’aide à chercher Lou qui semble bien cachée",
+                "target": "Ce dernier",
+                "options": [
+                    "Lou",
+                    "Liam",
+                    "Julie",
+                    "Milou"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_fr_l",
+                "phrase": "Ce dernier l’aide à chercher Lou qui semble bien cachée",
+                "target": "L’",
+                "options": [
+                    "Lou",
+                    "Liam",
+                    "Julie",
+                    "Milou"
+                ],
+                "reponse": 1
+            },
+            {
+                "id": "ana_fr_cachee",
+                "phrase": "Ce dernier l’aide à chercher Lou qui semble bien cachée",
+                "target": "Bien cachée",
+                "options": [
+                    "Lou",
+                    "Liam",
+                    "Julie",
+                    "Milou"
+                ],
+                "reponse": 0
+            },
+            {
+                "id": "ana_fr_y",
+                "phrase": "Ils y entrent",
+                "target": "Y",
+                "options": [
+                    "Toboggan",
+                    "Buisson",
+                    "Arbre",
+                    "Garage"
+                ],
+                "reponse": 3
+            },
+            {
+                "id": "ana_fr_la",
+                "phrase": "Là, ils découvrent leurs vélos par terre",
+                "target": "Là",
+                "options": [
+                    "Toboggan",
+                    "Buisson",
+                    "Arbre",
+                    "Garage"
+                ],
+                "reponse": 3
+            }
+        ]
+    }
+  ]
+}

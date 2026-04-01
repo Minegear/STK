@@ -1,0 +1,489 @@
+/* ==========================================================================
+   1. VARIABLES ET STYLE GLOBAL
+   ========================================================================== */
+:root {
+    --primary-blue: #1e3a8a;    /* Bleu foncé : texte et header */
+    --accent-blue: #3b82f6;     /* Bleu vif : boutons et bordures */
+    --bg-light: #f8fafc;        /* Fond de page très clair */
+    --white: #ffffff;
+    --success: #22c55e;         /* Vert validation */
+    --error: #ef4444;           /* Rouge erreur */
+    --gray-removed: #94a3b8;    /* Gris pour les éléments éliminés */
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--primary-blue);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.hidden { display: none !important; }
+
+/* ==========================================================================
+   2. NAVIGATION (HEADER ET FIL D'ARIANE)
+   ========================================================================== */
+header {
+    background-color: var(--primary-blue);
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+#nav-breadcrumb {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    cursor: default;
+}
+
+#nav-breadcrumb a {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+#nav-breadcrumb a:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+}
+
+/* ==========================================================================
+   3. ÉLÉMENTS DE MENU ET BOUTONS
+   ========================================================================== */
+
+/* Grille de l'accueil */
+#menu-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+/* Cartes de sélection d'exercices (Menu) */
+.card {
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.card:hover { transform: translateY(-5px); }
+
+.card h3 { margin-top: 0; color: var(--primary-blue); }
+
+.card p {
+    font-size: 0.95rem;
+    color: #475569;
+    padding: 0 15px;
+    margin-bottom: 20px;
+    min-height: 60px;
+}
+
+/* Sous-menus et boutons de variantes */
+.submenu-selection {
+    text-align: center;
+    padding: 40px;
+}
+
+.submenu-selection .options-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-variant {
+    background-color: var(--white);
+    color: var(--primary-blue);
+    border: 2px solid var(--accent-blue);
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 400px;
+    min-width: 250px;
+}
+
+.btn-variant:hover {
+    background-color: var(--accent-blue);
+    color: var(--white);
+    transform: scale(1.05);
+}
+
+.btn-play {
+    background-color: var(--accent-blue);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-play:hover { background-color: var(--primary-blue); }
+
+/* Bouton Spécifique de Validation (QCM) */
+.btn-validate {
+    display: block;
+    margin: 30px auto;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    background-color: var(--success);
+    transition: transform 0.2s, background-color 0.3s;
+}
+
+.btn-validate:hover {
+    background-color: #16a34a;
+    transform: scale(1.05);
+}
+
+/* ==========================================================================
+   4. ZONE D'EXERCICE (MÉDIAS ET CONSIGNES)
+   ========================================================================== */
+
+.video-main {
+    width: 100%;
+    max-width: 800px;
+    display: block;
+    margin: 0 auto 20px auto;
+    border: 4px solid var(--accent-blue);
+    border-radius: 12px;
+    background: #000;
+}
+
+.consigne-container {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.img-main-qcm {
+    max-width: 300px;
+    border: 4px solid var(--accent-blue);
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.card-text-consigne {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 5px solid var(--accent-blue);
+    margin: 10px auto;
+    max-width: 800px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.step-counter {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+/* Écran de consigne vidéo */
+.consigne-screen {
+    text-align: center;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+/* ==========================================================================
+   5. TYPES D'EXERCICES (LAYOUTS)
+   ========================================================================== */
+
+/* Qui est-ce ? (Grille d'images) */
+.grid-elimination {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.animal-card {
+    background: var(--white);
+    padding: 5px;
+    border-radius: 8px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.animal-card img {
+    width: 100%;
+    display: block;
+    border-radius: 5px;
+}
+
+/* Mise en page des options (Horizontale pour images / Verticale pour vidéos) */
+.options-grid-horizontal {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.options-grid-horizontal .option-card {
+    flex: 1;
+    max-width: 250px;
+    min-width: 200px;
+}
+
+.options-grid-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.options-grid-vertical .option-card {
+    width: 100%;
+    max-width: 500px;
+}
+
+/* Carte d'option générique */
+.option-card {
+    background: var(--white);
+    border: 2px solid #e2e8f0;
+    border-radius: 15px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.media-container {
+    position: relative;
+    background: #f1f5f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 150px;
+}
+
+.media-container img, .media-container video {
+    width: 100%;
+    display: block;
+    cursor: pointer;
+}
+
+.selection-area {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    cursor: pointer;
+    background: #f1f5f9;
+}
+
+/* Anaphores (Texte et surbrillance) */
+.target-text {
+    background-color: #dbeafe;
+    color: var(--primary-blue);
+    padding: 0 4px;
+    border-bottom: 2px solid var(--accent-blue);
+    font-weight: bold;
+}
+
+.recit-reference-card {
+    background: #f1f5f9;
+    border-left: 5px solid var(--primary-blue);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    text-align: justify;
+    font-size: 0.95rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Options purement textuelles */
+.text-option-padding { padding: 20px; min-height: 80px; }
+.text-choice { font-size: 1.1rem; font-weight: 500; color: var(--primary-blue); margin: 0; }
+
+/* ==========================================================================
+   6. MODALES ET EFFETS SPÉCIAUX
+   ========================================================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 800px;
+    position: relative;
+    text-align: center;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px; right: 20px;
+    font-size: 2rem;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--primary-blue);
+}
+
+/* Miniature de rappel du récit */
+.mini-context-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 120px;
+    background: var(--white);
+    border: 3px solid var(--accent-blue);
+    border-radius: 10px;
+    cursor: pointer;
+    z-index: 900;
+    text-align: center;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* AJOUTEZ CECI ICI */
+.mini-context-container video {
+    width: 100% !important; /* Force la vidéo à prendre les 120px du parent */
+    display: block;
+}
+
+.mini-context-container span {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: var(--primary-blue);
+    display: block;
+    padding: 3px 0;
+}
+
+.mini-context-container:hover { transform: scale(1.1); }
+
+/* Bouton de lecture vidéo sur miniature */
+.btn-play-video {
+    position: absolute;
+    bottom: 10px; right: 10px;
+    background: rgba(30, 58, 138, 0.9);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ==========================================================================
+   7. ÉTATS DE JEU ET ANIMATIONS
+   ========================================================================== */
+
+.click-locked { pointer-events: none; cursor: wait; }
+
+/* États Grille Qui est-ce */
+.already-removed {
+    opacity: 0.2;
+    filter: grayscale(100%);
+    pointer-events: none;
+    transform: scale(0.9);
+}
+
+.correct-removed {
+    filter: grayscale(80%);
+    opacity: 0.4;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+/* Feedback visuel Succès */
+.correct-border {
+    border: 6px solid var(--success) !important;
+    background-color: rgba(34, 197, 94, 0.1);
+    box-shadow: 0 0 15px var(--success);
+}
+
+/* Animations */
+@keyframes finish-step {
+    0% { transform: scale(0.95); opacity: 0.4; }
+    100% { transform: scale(0); opacity: 0; }
+}
+
+.step-validated .correct-removed {
+    animation: finish-step 1.2s ease-in-out forwards;
+}
+
+@keyframes blink-red {
+    0%, 100% { outline: 3px solid transparent; }
+    50% { outline: 5px solid var(--error); }
+}
+
+.error-flash { animation: blink-red 0.2s ease-in-out 5; }
+
+/* Zoom vidéo */
+.video-zoom {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(1.5);
+    z-index: 2000;
+    border: 5px solid var(--accent-blue);
+    width: 90% !important;
+    max-width: 800px !important;
+}
+
+/* ==========================================================================
+   8. MODALE DE FIN ET RESPONSIVE
+   ========================================================================== */
+
+/* Actions dans la modale de fin */
+.finish-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 30px;
+    align-items: center;
+}
+
+.finish-actions .btn-variant {
+    width: 100%;
+    max-width: 350px;
+}
+
+/* Adaptation Mobile */
+@media (max-width: 768px) {
+    .grid-elimination { grid-template-columns: repeat(4, 1fr); }
+    .video-main { max-height: 300px; }
+    .video-zoom { transform: translate(-50%, -50%) scale(1.1); }
+    .mini-context-container { width: 90px; top: 70px; right: 10px; }
+}

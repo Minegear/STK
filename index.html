@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apprentissage LSF</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <span id="nav-breadcrumb"><a href="#" onclick="showMenu()">Accueil</a></span>
+        </nav>
+    </header>
+
+    <main id="app">
+        <section id="menu-container"></section>
+        <section id="exercise-container" class="hidden"></section>
+    </main>
+
+    <script src="script.js"></script>
+    <div id="finish-modal" class="modal-overlay hidden">
+    <div class="modal-content finish-card">
+        <div class="finish-icon">🎉</div>
+        <h2>Exercice terminé !</h2>
+        <p id="finish-message">Félicitations, vous avez complété toute la série.</p>
+        <div class="finish-actions">
+            <button class="btn-variant" onclick="restartCurrentExercise()">Refaire l'exercice</button>
+            <button class="btn-variant" onclick="goToSubMenu()">Faire un autre exercice</button>
+            <button class="btn-play" onclick="goToHome()">Revenir à l'accueil</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
