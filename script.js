@@ -5,6 +5,8 @@ let currentCategory = null;
 let targetsLeftInStep = [];
 let consecutiveErrors = 0;
 let isClickable = true;
+let startTime = null;
+const sessionID = "user_" + Math.floor(Math.random() * 10000);
 
 // --- INITIALISATION ---
 
@@ -255,6 +257,8 @@ function loadExercise(category, index) {
     
     html += `</div><button class="btn-play btn-validate" onclick="validateQCM()">Valider Réponse</button>`;
     container.innerHTML = html;
+
+    startTime = Date.now();
 }
 
 // --- FONCTIONS DE RENDU (TEMPLATES) ---
@@ -347,6 +351,12 @@ function validateQCM() {
     const el = document.getElementById(`opt-${index}`);
 
     if (index === currentExo.reponse) {
+
+        const endTime = Date.now();
+        const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
+        const dateStr = new Date().toLocaleString();
+        sendDataToGoogle(sessionID, dateStr, currentExo.id, durationSeconds + "s");
+
         el.classList.add('correct-border');
         isClickable = false;
 
@@ -492,4 +502,26 @@ function goToSubMenu() {
 function goToHome() {
     closeFinishModal();
     showMenu();
+}
+
+function sendDataToGoogle(user, date, exo, temps) {
+    const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfyHVDqMvl_SEkjbFy74LSONtsZCcO1Xuu4GGFrZ4EqF07tJQ/formResponse";
+    
+    const formData = new FormData();
+    
+    // Remplace les chiffres par tes propres codes entry.XXXX
+    formData.append("entry.1475131332", user);
+    formData.append("entry.464227689", date);
+    formData.append("entry.723616511", exo);
+    formData.append("entry.2104479172", temps);
+
+    // Envoi silencieux
+    fetch(formURL, {
+        method: "POST",
+        mode: "no-cors"
+    }).then(() => {
+        console.log("Données centralisées sur Google Sheets !");
+    }).catch((error) => {
+        console.error("Erreur d'envoi :", error);
+    });
 }
