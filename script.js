@@ -355,6 +355,7 @@ function validateQCM() {
         const endTime = Date.now();
         const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
         const dateStr = new Date().toLocaleString();
+        console.log("ID de l'exo :", currentExo ? currentExo.id : "ERREUR : currentExo est null");
         sendDataToGoogle(sessionID, dateStr, currentExo.id, durationSeconds + "s");
 
         el.classList.add('correct-border');
