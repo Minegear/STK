@@ -506,24 +506,26 @@ function goToHome() {
 }
 
 function sendDataToGoogle(user, date, exo, temps) {
-    console.log("Tentative d'envoi :", {user, date, exo, temps});
-    
     const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfyHVDqMvl_SEkjbFy74LSONtsZCcO1Xuu4GGFrZ4EqF07tJQ/formResponse";
     
-    const formData = new FormData();
-    
-    formData.append("entry.1475131332", user);
-    formData.append("entry.464227689", date);
-    formData.append("entry.723616511", exo);
-    formData.append("entry.2104479172", temps);
+    const params = new URLSearchParams();
+    params.append("entry.1475131332", user);
+    params.append("entry.464227689", date);
+    params.append("entry.723616511", exo);
+    params.append("entry.2104479172", temps);
 
-    // Envoi silencieux
     fetch(formURL, {
         method: "POST",
-        mode: "no-cors"
-    }).then(() => {
-        console.log("Données centralisées sur Google Sheets !");
-    }).catch((error) => {
+        mode: "no-cors",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: params.toString()
+    })
+    .then(() => {
+        console.log("Données envoyées avec la méthode URL !");
+    })
+    .catch((error) => {
         console.error("Erreur d'envoi :", error);
     });
 }
