@@ -505,6 +505,8 @@ function goToHome() {
 }
 
 function sendDataToGoogle(user, date, exo, temps) {
+    console.log("Tentative d'envoi :", {user, date, exo, temps});
+    
     const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfyHVDqMvl_SEkjbFy74LSONtsZCcO1Xuu4GGFrZ4EqF07tJQ/formResponse";
     
     const formData = new FormData();
