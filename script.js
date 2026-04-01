@@ -509,7 +509,6 @@ function sendDataToGoogle(user, date, exo, temps) {
     
     const formData = new FormData();
     
-    // Remplace les chiffres par tes propres codes entry.XXXX
     formData.append("entry.1475131332", user);
     formData.append("entry.464227689", date);
     formData.append("entry.723616511", exo);
