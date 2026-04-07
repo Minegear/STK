@@ -554,9 +554,6 @@ function toggleZoom(videoElement) {
 }
 
 function openConsigneModal(groupName) {
-    console.log("Recherche de la consigne pour :", groupName);
-    console.log("Données disponibles :", currentData.categories);
-
     let category = currentData.categories.find(c => c.groupe === groupName || c.id === groupName);
 
     const texteConsigne = category ? (category.consigne_texte || "Consigne non disponible.") : "Consigne non disponible.";
@@ -657,8 +654,6 @@ function sendDataToGoogle(user, date, exo, temps) {
     document.body.appendChild(form);
     form.submit();
     
-    console.log("Données envoyées via formulaire invisible !");
-
     setTimeout(() => {
         document.body.removeChild(form);
         document.body.removeChild(iframe);
