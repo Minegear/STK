@@ -2,8 +2,10 @@
   "categories": [
     {
       "id": "cat_qui_est_ce",
+      "groupe": "qui_est_ce",
       "nom": "Qui est-ce ? (Élimination)",
       "type": "grille_elimination",
+      "consigne_texte" : "Regarde bien la vidéo pour connaître les caractéristiques de l'animal. Clique ensuite sur les animaux qui ne correspondent pas pour les éliminer de la grille.",
       "config": { "colonnes": 6, "lignes": 4 },
       "banque_animaux": [
             {"id": 0, "nom": "Chat", "img": "assets/images/qui_est_ce/chat.jpg"},
@@ -38,7 +40,7 @@
           "etapes": [
             {
               "video": "assets/videos/qui_est_ce/voler_pas_savoir.mp4",
-              "indices_a_retirer": [2, 10, 14, 17, 18]
+              "indices_a_retirer": [2, 7, 10, 14, 17, 18]
             },
             {
               "video": "assets/videos/qui_est_ce/animal_taches_ya_pas.mp4",
@@ -50,7 +52,7 @@
             },
             {
               "video": "assets/videos/qui_est_ce/animal_corps_couleur_unique.mp4",
-              "indices_a_retirer": [1, 3, 6, 7, 11, 13, 19, 20]
+              "indices_a_retirer": [1, 3, 6, 11, 13, 19, 20]
             },
             {
               "video": "assets/videos/qui_est_ce/patte_elephant_ya.mp4",
@@ -68,11 +70,11 @@
           "etapes": [
             {
               "video": "assets/videos/qui_est_ce/animal_corps_couleur_unique.mp4",
-              "indices_a_retirer": [1, 2, 3, 4, 6, 7, 8, 9, 11, 14, 17, 18, 19, 20, 22]
+              "indices_a_retirer": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 22]
             },
             {
               "video": "assets/videos/qui_est_ce/poils_ya_pas.mov",
-              "indices_a_retirer": [0, 10, 23]
+              "indices_a_retirer": [0, 23]
             },
             {
               "video": "assets/videos/qui_est_ce/marcher_prof_elephant.mp4",
@@ -106,8 +108,10 @@
     },
     {
         "id": "cat_vrai_faux_image",
+        "groupe": "vrai_faux_group",
         "nom": "Vocabulaire LSF",
         "type": "video_to_image",
+        "consigne_texte": "Regarde bien ce qui est décrit, et sélectionne ce qui y correspond parmis les propositions.",
         "questions": [
         {
             "id": "vfi_bol",
@@ -213,6 +217,7 @@
     },
     {
         "id": "cat_vrai_faux_vidéo",
+        "groupe": "vrai_faux_group",
         "nom": "Vocabulaire LSF",
         "type": "image_to_video",
         "questions": [
@@ -270,8 +275,10 @@
     },
     {
         "id": "cat_anaphore_lsf",
+        "groupe": "anaphore_group",
         "nom": "Anaphore",
         "type": "video_to_videos",
+        "consigne_texte": "Des consignes en langage des signes sont disponibles au début de chaque exercice.",
         "video_contexte": "assets/videos/anaphore/Recit-1-anaphore.mov",
         "consignes": "assets/videos/anaphore/consigne_LSF.mp4",
         "questions": [
@@ -401,6 +408,7 @@
     },
     {
         "id": "cat_anaphore_fr>lsf",
+        "groupe": "anaphore_group",
         "nom": "Anaphore",
         "type": "text_to_videos",
         "video_contexte": "assets/videos/anaphore/Recit-1-anaphore.mov",
@@ -462,6 +470,7 @@
     },
     {
         "id": "cat_anaphore_lsf>fr",
+        "groupe": "anaphore_group",
         "nom": "Anaphore",
         "type": "video_to_text",
         "video_contexte": "assets/videos/anaphore/Recit-1-anaphore.mov",
@@ -532,6 +541,7 @@
     },
     {
         "id": "cat_anaphore_fr",
+        "groupe": "anaphore_group",
         "nom": "Anaphore",
         "type": "text_to_text",
         "video_contexte": "assets/videos/anaphore/Recit-1-anaphore.mov",
@@ -540,7 +550,7 @@
         "questions": [
             {
                 "id": "ana_fr_ils",
-                "phrase": "Ils jouent à cache-cache",
+                "phrase": "Ils jouent à cache-cache.",
                 "target": "Ils",
                 "options": [
                     "Lou, Liam et Julie",
@@ -551,7 +561,7 @@
             },
             {
                 "id": "ana_fr_elle",
-                "phrase": "Elle commence à compter près de l’arbre",
+                "phrase": "Elle commence à compter près de l’arbre.",
                 "target": "Elle",
                 "options": [
                     "Lou",
@@ -563,7 +573,7 @@
             },
             {
                 "id": "ana_fr_ca",
-                "phrase": "Ça lui fait une bonne cachette",
+                "phrase": "Ça lui fait une bonne cachette.",
                 "target": "Ça",
                 "options": [
                     "Buisson",
@@ -574,7 +584,7 @@
             },
             {
                 "id": "ana_fr_lui",
-                "phrase": "Ça lui fait une bonne cachette",
+                "phrase": "Ça lui fait une bonne cachette.",
                 "target": "Lui",
                 "options": [
                     "Lou",
@@ -586,7 +596,7 @@
             },
             {
                 "id": "ana_fr_moi",
-                "phrase": "Aide-moi à les trouver",
+                "phrase": "Aide-moi à les trouver !",
                 "target": "Moi",
                 "options": [
                     "Lou",
@@ -598,7 +608,7 @@
             },
             {
                 "id": "ana_fr_tu",
-                "phrase": "Est-ce que tu les as vus près du buisson",
+                "phrase": "Est-ce que tu les as vus près du buisson ?",
                 "target": "Tu",
                 "options": [
                     "Lou",
@@ -610,7 +620,7 @@
             },
             {
                 "id": "ana_fr_dernier",
-                "phrase": "Ce dernier l’aide à chercher Lou qui semble bien cachée",
+                "phrase": "Ce dernier l’aide à chercher Lou qui semble bien cachée.",
                 "target": "Ce dernier",
                 "options": [
                     "Lou",
@@ -622,7 +632,7 @@
             },
             {
                 "id": "ana_fr_l",
-                "phrase": "Ce dernier l’aide à chercher Lou qui semble bien cachée",
+                "phrase": "Ce dernier l’aide à chercher Lou qui semble bien cachée.",
                 "target": "L’",
                 "options": [
                     "Lou",
@@ -634,7 +644,7 @@
             },
             {
                 "id": "ana_fr_cachee",
-                "phrase": "Ce dernier l’aide à chercher Lou qui semble bien cachée",
+                "phrase": "Ce dernier l’aide à chercher Lou qui semble bien cachée.",
                 "target": "Bien cachée",
                 "options": [
                     "Lou",
@@ -646,7 +656,7 @@
             },
             {
                 "id": "ana_fr_y",
-                "phrase": "Ils y entrent",
+                "phrase": "Ils y entrent.",
                 "target": "Y",
                 "options": [
                     "Toboggan",
@@ -658,7 +668,7 @@
             },
             {
                 "id": "ana_fr_la",
-                "phrase": "Là, ils découvrent leurs vélos par terre",
+                "phrase": "Là, ils découvrent leurs vélos par terre.",
                 "target": "Là",
                 "options": [
                     "Toboggan",

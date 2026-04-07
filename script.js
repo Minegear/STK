@@ -49,8 +49,16 @@ function updateBreadcrumb(category = null, exo = null) {
 
 // Affiche l'écran d'accueil avec les trois grands piliers
 function showMenu() {
+    const allVideos = document.querySelectorAll('video');
+    allVideos.forEach(v => {
+        v.pause();
+        v.currentTime = 0;
+    });
+
     const menu = document.getElementById('menu-container');
     const exoCont = document.getElementById('exercise-container');
+    const modal = document.getElementById('context-modal');
+    if (modal) modal.classList.add('hidden');
     menu.classList.remove('hidden');
     exoCont.classList.add('hidden');
     updateBreadcrumb();
@@ -109,6 +117,9 @@ function startCategory(catId) {
 // Affiche les variantes du mode Vrai ou Faux
 function showSubMenuVraiFaux() {
     document.getElementById('exercise-container').innerHTML = `
+        <div class="help-button-container">
+            <button class="btn-help" onclick="openConsigneModal('vrai_faux_group')">?</button>
+        </div>
         <div class="submenu-selection">
             <h2>Choisissez le mode :</h2>
             <div class="options-grid">
@@ -121,6 +132,9 @@ function showSubMenuVraiFaux() {
 // Affiche les différents exercices d'Anaphore
 function showSubMenuAnaphore() {
     document.getElementById('exercise-container').innerHTML = `
+        <div class="help-button-container">
+            <button class="btn-help" onclick="openConsigneModal('anaphore_group')">?</button>
+        </div>
         <div class="submenu-selection">
             <h2>Choisissez l'exercice d'anaphore :</h2>
             <div class="options-grid">
@@ -134,7 +148,11 @@ function showSubMenuAnaphore() {
 
 // Affiche la liste des exercices pour "Qui est-ce ?"
 function showSubMenuQuiEstCe(category) {
-    let html = `<div class="submenu-selection"><h2>Choisissez votre défi :</h2><div class="options-grid">`;
+    let html = `
+        <div class="help-button-container">
+            <button class="btn-help" onclick="openConsigneModal('${category.id}')">?</button>
+        </div>
+        <div class="submenu-selection"><h2>Choisissez votre défi :</h2><div class="options-grid">`;
     html += category.exercices.map((exo, index) => `
         <button class="btn-variant" onclick="loadExerciseById('${category.id}', '${exo.id}')">
             ${index + 1}. ${exo.id.split('_').pop().toUpperCase()}
@@ -188,6 +206,9 @@ function loadExercise(category, index) {
     isClickable = true;
     updateBreadcrumb(category, item);
 
+    startTime = Date.now();
+
+
     if (category.type === 'grille_elimination') {
         container.innerHTML = `<h2>${item.titre}</h2>` + renderQuiEstCe(category, item);
         return; 
@@ -202,10 +223,19 @@ function loadExercise(category, index) {
     html += `<div class="consigne-container">`;
     
     if (category.id === "cat_anaphore_fr") {
+        let fullText = "Lou, son grand frère Liam et sa petite sœur Julie sont dans le jardin. Ils jouent à cache-cache. La plus jeune doit trouver les autres. Elle commence à compter près de l’arbre. Son frère court derrière le buisson. Ça lui fait une bonne cachette. Sa sœur va dans le garage et se glisse entre la voiture et les vélos. Sans faire exprès, elle les fait tomber. Julie a fini de compter et elle part à leur recherche. Elle voit bouger quelque chose derrière le toboggan. Mais c’est Milou qui aboie et veut jouer ! Julie lui dit : « Aide-moi à les trouver ! Est-ce que tu les as vus près du buisson ? ». Elle y va, accompagnée de son chien, et ils trouvent Liam. Ce dernier l’aide à chercher Lou qui semble bien cachée. Ils se dirigent vers le garage. Ils y entrent. Là, ils découvrent leurs vélos par terre. Ils les poussent et trouvent enfin leur sœur. Tout contents de cette bonne partie, ils rentrent goûter.";
+
+        if (item.phrase && item.target) {
+            let phraseHighlighted = item.phrase.replace(item.target, `<u>${item.target}</u>`);
+            let finalSentence = `<strong>${phraseHighlighted}</strong>`;
+            
+            fullText = fullText.replace(item.phrase, finalSentence);
+        }
+
         html += `
             <div class="recit-reference-card">
                 <h3>Texte de référence</h3>
-                <p>Lou, son grand frère Liam et sa petite sœur Julie sont dans le jardin. Ils jouent à cache-cache. La plus jeune doit trouver les autres. Elle commence à compter près de l’arbre. Son frère court derrière le buisson. Ça lui fait une bonne cachette. Sa sœur va dans le garage et se glisse entre la voiture et les vélos. Sans faire exprès, elle les fait tomber. Julie a fini de compter et elle part à leur recherche. Elle voit bouger quelque chose derrière le toboggan. Mais c’est Milou qui aboie et veut jouer ! Julie lui dit : « Aide-moi à les trouver ! Est-ce que tu les as vus près du buisson ? ». Elle y va, accompagnée de son chien, et ils trouvent Liam. Ce dernier l’aide à chercher Lou qui semble bien cachée. Ils se dirigent vers le garage. Ils y entrent. Là, ils découvrent leurs vélos par terre. Ils les poussent et trouvent enfin leur sœur. Tout contents de cette bonne partie, ils rentrent goûter.</p>
+                <p>${fullText}</p>
             </div>`;
     }
 
@@ -217,6 +247,17 @@ function loadExercise(category, index) {
 
     if (item.text || item.phrase) {
         let text = item.text || item.phrase;
+        
+        // Grisage du texte précédement présent
+        if (category.id === 'cat_anaphore_fr>lsf' && index > 0) {
+            const prevText = category.questions[index - 1].text;
+            
+            if (text.startsWith(prevText)) {
+                const newPart = text.substring(prevText.length);
+                text = `<span class="text-history">${prevText}</span><span class="text-new">${newPart}</span>`;
+            }
+        }
+
         if (item.target) {
             const regex = new RegExp(`(${item.target})`, 'gi');
             text = text.replace(regex, `<span class="target-text">$1</span>`);
@@ -225,40 +266,35 @@ function loadExercise(category, index) {
     }
     html += `</div>`;
 
-    const hasVideoOptions = item.options && item.options.some(opt => 
-        typeof opt === 'string' && (opt.toLowerCase().includes('.mov') || opt.toLowerCase().includes('.mp4'))
-    );
-    
-    const gridClass = hasVideoOptions ? 'options-grid-vertical' : 'options-grid-horizontal';
+    const gridClass = 'options-grid-horizontal';
 
     html += `<div class="${gridClass}">`;
+
     html += item.options.map((opt, i) => {
         const isMedia = typeof opt === 'string' && (opt.includes('.') || opt.includes('/'));
         const isVideo = isMedia && (opt.toLowerCase().includes('.mov') || opt.toLowerCase().includes('.mp4'));
 
         return `
-            <div class="option-card" id="opt-${i}">
+            <div class="option-card" id="opt-${i}" onclick="selectOption(${i})">
                 <div class="media-container ${!isMedia ? 'text-option-padding' : ''}">
                     ${isMedia ? 
                         (isVideo ? 
-                            `<video id="vid-${i}" src="${opt}" onclick="toggleZoom(this)"></video>
-                             <button class="btn-play-video" onclick="playVideo('vid-${i}')"><span class="play-icon">▶</span> Visionner</button>` : 
-                            `<img src="${opt}" onclick="selectOption(${i})">`
+                            `<div class="video-wrapper">
+                                <video id="vid-${i}" src="${opt}" loop muted playsinline></video>
+                                <div class="video-overlay"><span class="play-icon-overlay">▶</span></div>
+                             </div>` : 
+                            `<img src="${opt}">`
                         ) : 
                         `<p class="text-choice">${opt}</p>`
                     }
                 </div>
-                <div class="selection-area" onclick="selectOption(${i})">
-                    <input type="radio" name="qcm" id="check-${i}" ${isClickable ? '' : 'disabled'}>
-                    <label for="check-${i}"></label>
-                </div>
+                <input type="radio" name="qcm" id="check-${i}" style="display:none;">
             </div>`;
     }).join('');
     
-    html += `</div><button class="btn-play btn-validate" onclick="validateQCM()">Valider Réponse</button>`;
+    html += `</div><button class="btn-play btn-validate" onclick="validateQCM()" style="font-size: 2.5rem; padding: 10px 60px;">✓</button>`;
     container.innerHTML = html;
 
-    startTime = Date.now();
 }
 
 // --- FONCTIONS DE RENDU (TEMPLATES) ---
@@ -304,7 +340,7 @@ function showAnaphoreConsigne(category) {
 
 // Génère le bouton "Voir le récit" et sa fenêtre modale
 function renderAnaphoreGeneric(category, item) {
-    if (category.video_contexte) {
+    if (category.id === 'cat_anaphore_lsf' && category.video_contexte) {
         return `
             <div class="mini-context-container" onclick="openContextModal()">
                 <video src="${category.video_contexte}"></video>
@@ -344,40 +380,53 @@ function renderQuiEstCe(category, exo) {
 
 // Vérifie la réponse choisie dans un QCM
 function validateQCM() {
+    if (!isClickable) return;
+    
     const selected = document.querySelector('input[name="qcm"]:checked');
     if (!selected) return;
+    
+    isClickable = false;
     
     const index = parseInt(selected.id.split('-')[1]);
     const el = document.getElementById(`opt-${index}`);
 
     if (index === currentExo.reponse) {
-
+        // --- RÉPONSE JUSTE ---
         const endTime = Date.now();
         const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
         const dateStr = new Date().toLocaleString();
+        
         sendDataToGoogle(sessionID, dateStr, currentExo.id, durationSeconds + "s");
 
+        el.classList.remove('is-playing', 'is-selected');
         el.classList.add('correct-border');
-        isClickable = false;
 
         setTimeout(() => {
             const nextIndex = currentStep + 1;
             const totalQuestions = (currentCategory.questions || []).length;
 
             if (nextIndex < totalQuestions) {
-                isClickable = true;
                 loadExercise(currentCategory, nextIndex);
             } else {
                 showFinishModal();
-                isClickable = true;
+                isClickable = true; 
                 if (currentCategory.id.includes('vrai_faux')) startCategory('vrai_faux_group');
                 else if (currentCategory.id.includes('anaphore')) startCategory('anaphore_group');
                 else showMenu();
             }
         }, 1500);
     } else {
-        el.classList.add('error-flash');
-        setTimeout(() => el.classList.remove('error-flash'), 1000);
+        // --- RÉPONSE FAUSSE ---
+        el.classList.remove('is-playing');
+        el.classList.add('error-selection');
+        
+        setTimeout(() => {
+            el.classList.remove('error-selection');
+            const video = el.querySelector('video');
+            if (video && !video.paused) el.classList.add('is-playing');
+            
+            isClickable = true; 
+        }, 1000);
     }
 }
 
@@ -420,6 +469,12 @@ function handleNextStep() {
             const container = document.getElementById('exercise-container');
             container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderQuiEstCe(currentCategory, currentExo);
         } else {
+            const endTime = Date.now();
+            const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
+            const dateStr = new Date().toLocaleString();
+            
+            sendDataToGoogle(sessionID, dateStr, currentExo.id, durationSeconds + "s");
+
             showFinishModal();
             showMenu();
         }
@@ -455,8 +510,37 @@ function closeContextModal() {
 }
 
 function selectOption(index) {
-    const input = document.getElementById(`check-${index}`);
-    if (input) input.checked = true;
+    if (!isClickable) return;
+
+    const allVideos = document.querySelectorAll('video[id^="vid-"]');
+    const allCards = document.querySelectorAll('.option-card');
+    const currentVideo = document.getElementById(`vid-${index}`);
+    const currentCard = document.getElementById(`opt-${index}`);
+    const radio = document.getElementById(`check-${index}`);
+
+    allCards.forEach(card => card.classList.remove('is-selected', 'is-playing'));
+    allVideos.forEach(v => {
+        if (v !== currentVideo) {
+            v.pause();
+            v.currentTime = 0;
+        }
+    });
+
+    if (radio) radio.checked = true;
+
+    if (currentCard) currentCard.classList.add('is-selected');
+
+    if (currentVideo) {
+        if (currentVideo.paused) {
+            currentVideo.play();
+            currentCard.classList.add('is-playing'); 
+        } else {
+            currentVideo.pause();
+            currentCard.classList.remove('is-playing');
+        }
+
+        currentVideo.onended = () => currentCard.classList.remove('is-playing');
+    }
 }
 
 function playVideo(id) {
@@ -467,6 +551,43 @@ function playVideo(id) {
 
 function toggleZoom(videoElement) {
     videoElement.classList.toggle('video-zoom');
+}
+
+function openConsigneModal(groupName) {
+    console.log("Recherche de la consigne pour :", groupName);
+    console.log("Données disponibles :", currentData.categories);
+
+    let category = currentData.categories.find(c => c.groupe === groupName || c.id === groupName);
+
+    const texteConsigne = category ? (category.consigne_texte || "Consigne non disponible.") : "Consigne non disponible.";
+    
+    let modal = document.getElementById('consigne-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'consigne-modal';
+        modal.className = 'modal-overlay hidden';
+        modal.onclick = closeConsigneModal;
+        document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="closeConsigneModal()">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #333;">Comment jouer ?</h2>
+            <div class="consigne-texte-zone">
+                <p style="font-size: 1.2rem; line-height: 1.6; color: #444;">${texteConsigne}</p>
+            </div>
+            <button class="btn-play" onclick="closeConsigneModal()" style="margin-top: 25px;">J'ai compris</button>
+        </div>`;
+    
+    modal.classList.remove('hidden');
+}
+
+function closeConsigneModal() {
+    const modal = document.getElementById('consigne-modal');
+    const video = document.getElementById('modal-consigne-video');
+    if (video) video.pause();
+    if (modal) modal.classList.add('hidden');
 }
 
 // --- GESTION DE LA FIN DE L'EXERCICE ---
@@ -506,22 +627,40 @@ function goToHome() {
 
 function sendDataToGoogle(user, date, exo, temps) {
     const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfyHVDqMvl_SEkjbFy74LSONtsZCcO1Xuu4GGFrZ4EqF07tJQ/formResponse";
-    
-    const formData = new FormData();
-    
-    // Remplace les chiffres par tes propres codes entry.XXXX
-    formData.append("entry.1475131332", user);
-    formData.append("entry.464227689", date);
-    formData.append("entry.723616511", exo);
-    formData.append("entry.2104479172", temps);
 
-    // Envoi silencieux
-    fetch(formURL, {
-        method: "POST",
-        mode: "no-cors"
-    }).then(() => {
-        console.log("Données centralisées sur Google Sheets !");
-    }).catch((error) => {
-        console.error("Erreur d'envoi :", error);
-    });
+    const iframe = document.createElement("iframe");
+    iframe.name = "hidden_iframe";
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+
+    const form = document.createElement("form");
+    form.action = formURL;
+    form.method = "POST";
+    form.target = "hidden_iframe";
+    form.style.display = "none";
+
+    const fields = {
+        "entry.1475131332": user,
+        "entry.464227689": date,
+        "entry.723616511": exo,
+        "entry.2104479172": temps
+    };
+
+    for (const [key, value] of Object.entries(fields)) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    
+    console.log("Données envoyées via formulaire invisible !");
+
+    setTimeout(() => {
+        document.body.removeChild(form);
+        document.body.removeChild(iframe);
+    }, 2000);
 }

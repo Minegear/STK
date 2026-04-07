@@ -154,6 +154,35 @@ header {
     transform: scale(1.05);
 }
 
+/* Container pour le bouton d'aide */
+.help-button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 20px;
+}
+
+/* Style du bouton "?" encadré */
+.btn-help {
+    background: white;
+    border: 2px solid #333;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: bold;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-help:hover {
+    background: #f0f0f0;
+    transform: scale(1.05);
+}
+
 /* ==========================================================================
    4. ZONE D'EXERCICE (MÉDIAS ET CONSIGNES)
    ========================================================================== */
@@ -188,6 +217,25 @@ header {
     margin: 10px auto;
     max-width: 800px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Texte des questions précédentes : discret en gris clair */
+.text-history {
+    color: #b0b0b0; 
+    font-weight: normal;
+}
+
+/* Nouveau texte ajouté pour la question en cours : bien noir */
+.text-new {
+    color: #000000;
+    font-weight: 500;
+}
+
+/* On s'assure que le paragraphe est bien lisible */
+.card-text-consigne p {
+    line-height: 1.7;
+    font-size: 1.15rem;
+    text-align: left;
 }
 
 .step-counter {
@@ -266,13 +314,18 @@ header {
 
 /* Carte d'option générique */
 .option-card {
-    background: var(--white);
-    border: 2px solid #e2e8f0;
-    border-radius: 15px;
-    overflow: hidden;
+    background-color: #f5f5f5;
+    border: 4px solid transparent;
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    transition: all 0.3s ease;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .media-container {
@@ -288,6 +341,39 @@ header {
     width: 100%;
     display: block;
     cursor: pointer;
+}
+
+/* Overlay Play translucide */
+.video-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.video-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+/* Cache l'overlay quand la vidéo joue */
+.is-playing .video-overlay {
+    opacity: 0;
+}
+
+.play-icon-overlay {
+    font-size: 20px;
+    margin-left: 3px;
 }
 
 .selection-area {
@@ -310,15 +396,45 @@ header {
 }
 
 .recit-reference-card {
-    background: #f1f5f9;
-    border-left: 5px solid var(--primary-blue);
-    padding: 20px;
+    background-color: #ffffff;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.recit-reference-card h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    display: inline-block;
+    padding-bottom: 5px;
     margin-bottom: 20px;
-    border-radius: 8px;
-    text-align: justify;
-    font-size: 0.95rem;
-    max-height: 200px;
-    overflow-y: auto;
+}
+
+.recit-reference-card p {
+    color: #000000;
+    font-size: 1.15rem;
+    line-height: 1.8;
+    text-align: left;
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+
+.recit-reference-card p strong {
+    color: #2c3e50;
+    font-weight: 800;
+    background-color: rgba(241, 196, 15, 0.1);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.recit-reference-card p u {
+    text-decoration: underline;
+    text-decoration-color: #e74c3c;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 4px;
 }
 
 /* Options purement textuelles */
@@ -349,6 +465,15 @@ header {
     text-align: center;
 }
 
+#modal-context-video {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
 .close-modal {
     position: absolute;
     top: 10px; right: 20px;
@@ -356,6 +481,23 @@ header {
     cursor: pointer;
     font-weight: bold;
     color: var(--primary-blue);
+}
+
+/* Placer après : .close-modal { ... } */
+
+#modal-consigne-video {
+    width: 100%;
+    max-height: 70vh;
+    border-radius: 8px;
+}
+
+.consigne-texte-zone {
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    border-left: 5px solid #3498db;
+    text-align: left;
+    margin-top: 15px;
 }
 
 /* Miniature de rappel du récit */
@@ -434,6 +576,39 @@ header {
     box-shadow: 0 0 15px var(--success);
 }
 
+.option-card.correct-border {
+    border: 6px solid #2ecc71 !important;
+    border-width: 4px !important;
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    animation: success-glow 0.8s ease-in-out !important;
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.6) !important;
+}
+
+@keyframes success-glow {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Bordure de sélection bleue */
+.option-card.is-selected {
+    border-color: #3498db !important;
+    background-color: #f5f5f5 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Animation de pulsation quand la vidéo joue */
+.option-card.is-playing {
+    animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+    0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(52, 152, 219, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+}
+
 /* Animations */
 @keyframes finish-step {
     0% { transform: scale(0.95); opacity: 0.4; }
@@ -450,6 +625,29 @@ header {
 }
 
 .error-flash { animation: blink-red 0.2s ease-in-out 5; }
+
+.option-card.error-selection {
+    border-color: #e74c3c !important;
+    background-color: #f5f5f5 !important;
+    animation: flash-red-strong 0.3s ease-in-out 3 !important;
+}
+
+@keyframes flash-red-strong {
+    0%, 100% { 
+        border-color: #e74c3c;
+        background-color: rgba(231, 76, 60, 0.2);
+    }
+    50% { 
+        border-color: #ff0000; 
+        background-color: rgba(231, 76, 60, 0.5);
+        transform: scale(1.05);
+    }
+}
+
+.btn-validate:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 /* Zoom vidéo */
 .video-zoom {
