@@ -6,7 +6,21 @@ let targetsLeftInStep = [];
 let consecutiveErrors = 0;
 let isClickable = true;
 let startTime = null;
-const sessionID = "user_" + Math.floor(Math.random() * 10000);
+let restoreClickTimerGarder = null;
+let currentScore = 0;
+let totalQuestions = 0;
+let totalErrors = 0;
+let userIdentifier = '';
+let identMode = 'eleve';
+
+// -----------------------------------------------------------------------
+// CONFIGURATION SUPABASE
+// Remplissez ces deux valeurs depuis :
+//   Dashboard Supabase > Project Settings > API
+// -----------------------------------------------------------------------
+const SUPABASE_URL = 'https://iohgfwhwsyddqeeycgxw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvaGdmd2h3c3lkZHFlZXljZ3h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMDMyMTUsImV4cCI6MjA5NTU3OTIxNX0.uLoW4w6n5ICnKokimkJM7K25nnooA5OeW0Eo3C3jdBw';      // clé "anon / public"
+// -----------------------------------------------------------------------
 
 // --- INITIALISATION ---
 
@@ -15,6 +29,14 @@ fetch('exercices.json')
     .then(data => {
         currentData = data;
         showMenu();
+        // Vérification de l'identification sauvegardée
+        const savedId = localStorage.getItem('userIdentifier');
+        if (savedId) {
+            userIdentifier = savedId;
+            updateUserDisplay();
+            document.getElementById('identification-modal').classList.add('hidden');
+        }
+        // Sinon, la modal reste visible (pas de classe "hidden" par défaut)
     });
 
 // --- NAVIGATION ET INTERFACE ---
@@ -34,6 +56,9 @@ function updateBreadcrumb(category = null, exo = null) {
         } else if (category.id.includes('anaphore')) {
             targetId = 'anaphore_group';
             displayName = 'Anaphore';
+        } else if (category.id.includes('qui_est_ce')) {
+            targetId = 'qui_est_ce_group';
+            displayName = 'Qui est-ce ?';
         }
 
         html += ` > <a href="#" onclick="startCategory('${targetId}')">${displayName}</a>`;
@@ -64,7 +89,7 @@ function showMenu() {
     updateBreadcrumb();
 
     const mainPillars = [
-        { id: 'cat_qui_est_ce', nom: 'Qui est-ce ?', desc: 'Un jeu d’élimination pour trouver l’animal mystère.' },
+        { id: 'qui_est_ce_group', nom: 'Qui est-ce ?', desc: 'Un jeu d’élimination pour trouver l’animal mystère.' },
         { id: 'vrai_faux_group', nom: 'Vrai ou Faux', desc: 'Associez des signes LSF à des images ou inversement.' },
         { id: 'anaphore_group', nom: 'Anaphore', desc: 'Travaillez les liens entre le français et la LSF.' }
     ];
@@ -93,20 +118,24 @@ function startCategory(catId) {
     if (catId === 'vrai_faux_group') {
         updateBreadcrumb({ id: 'vrai_faux_group', nom: 'Vrai ou Faux' });
         showSubMenuVraiFaux();
-    } 
+    }
     else if (catId === 'anaphore_group') {
         updateBreadcrumb({ id: 'anaphore_group', nom: 'Anaphore' });
         showSubMenuAnaphore();
+    }
+    else if (catId === 'qui_est_ce_group') {
+        updateBreadcrumb({ id: 'qui_est_ce_group', nom: 'Qui est-ce ?' });
+        showSubMenuQuiEstCeGroup();
     }
     else if (category) {
         updateBreadcrumb(category);
         if (category.id === 'cat_anaphore_lsf') {
             showAnaphoreRecit(category);
-        } 
+        }
         else if (category.id.includes('cat_anaphore')) {
             showAnaphoreConsigne(category);
-        } 
-        else if (category.id === 'cat_qui_est_ce') {
+        }
+        else if (category.id.includes('qui_est_ce')) {
             showSubMenuQuiEstCe(category);
         } else {
             loadExercise(category, 0);
@@ -125,6 +154,22 @@ function showSubMenuVraiFaux() {
             <div class="options-grid">
                 <button class="btn-variant" onclick="startCategory('cat_vrai_faux_image')">Trouver le mot (Vidéo -> Image)</button>
                 <button class="btn-variant" onclick="startCategory('cat_vrai_faux_vidéo')">Trouver le geste (Image -> Vidéo)</button>
+            </div>
+        </div>`;
+}
+
+// Affiche le choix de mode pour "Qui est-ce ?" (Garder ou Éliminer)
+function showSubMenuQuiEstCeGroup() {
+    document.getElementById('exercise-container').innerHTML = `
+        <div class="submenu-selection">
+            <h2>Choisissez le mode :</h2>
+            <div class="options-grid">
+                <button class="btn-variant" onclick="startCategory('cat_qui_est_ce_garder')">
+                    Sélectionner les animaux qui correspondent
+                </button>
+                <button class="btn-variant" onclick="startCategory('cat_qui_est_ce_eliminer')">
+                    Éliminer les animaux qui ne correspondent pas
+                </button>
             </div>
         </div>`;
 }
@@ -206,12 +251,19 @@ function loadExercise(category, index) {
     isClickable = true;
     updateBreadcrumb(category, item);
 
-    startTime = Date.now();
+    // Réinitialisation des scores et du chrono au début d'un exercice
+    if (index === 0) {
+        currentScore = 0;
+        totalQuestions = 0;
+        totalErrors = 0;
+        startTime = Date.now();
+    }
 
 
     if (category.type === 'grille_elimination') {
-        container.innerHTML = `<h2>${item.titre}</h2>` + renderQuiEstCe(category, item);
-        return; 
+        const renderFn = category.id === 'cat_qui_est_ce_garder' ? renderQuiEstCeGarder : renderQuiEstCe;
+        container.innerHTML = `<h2>${item.titre}</h2>` + renderFn(category, item);
+        return;
     }
 
     let html = "";
@@ -388,46 +440,30 @@ function validateQCM() {
     isClickable = false;
     
     const index = parseInt(selected.id.split('-')[1]);
-    const el = document.getElementById(`opt-${index}`);
 
-    if (index === currentExo.reponse) {
-        // --- RÉPONSE JUSTE ---
-        const endTime = Date.now();
-        const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
-        const dateStr = new Date().toLocaleString();
-        
-        sendDataToGoogle(sessionID, dateStr, currentExo.id, durationSeconds + "s");
+    // Enregistrement de la réponse sans feedback visuel
+    totalQuestions++;
+    if (index === currentExo.reponse) currentScore++;
 
-        el.classList.remove('is-playing', 'is-selected');
-        el.classList.add('correct-border');
+    setTimeout(() => {
+        const nextIndex = currentStep + 1;
+        const total = (currentCategory.questions || []).length;
 
-        setTimeout(() => {
-            const nextIndex = currentStep + 1;
-            const totalQuestions = (currentCategory.questions || []).length;
+        if (nextIndex < total) {
+            loadExercise(currentCategory, nextIndex);
+        } else {
+            // Fin de l'exercice : envoi des données et affichage du score
+            const endTime = Date.now();
+            const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
+            sendDataToSupabase(currentCategory.id, parseFloat(durationSeconds), currentScore, totalQuestions, null);
 
-            if (nextIndex < totalQuestions) {
-                loadExercise(currentCategory, nextIndex);
-            } else {
-                showFinishModal();
-                isClickable = true; 
-                if (currentCategory.id.includes('vrai_faux')) startCategory('vrai_faux_group');
-                else if (currentCategory.id.includes('anaphore')) startCategory('anaphore_group');
-                else showMenu();
-            }
-        }, 1500);
-    } else {
-        // --- RÉPONSE FAUSSE ---
-        el.classList.remove('is-playing');
-        el.classList.add('error-selection');
-        
-        setTimeout(() => {
-            el.classList.remove('error-selection');
-            const video = el.querySelector('video');
-            if (video && !video.paused) el.classList.add('is-playing');
-            
-            isClickable = true; 
-        }, 1000);
-    }
+            showFinishModal();
+            isClickable = true;
+            if (currentCategory.id.includes('vrai_faux')) startCategory('vrai_faux_group');
+            else if (currentCategory.id.includes('anaphore')) startCategory('anaphore_group');
+            else showMenu();
+        }
+    }, 400);
 }
 
 // Gère l'élimination d'un animal dans "Qui est-ce ?"
@@ -447,14 +483,14 @@ function checkElimination(id) {
         targetsLeftInStep = targetsLeftInStep.filter(tid => tid !== id);
         if (targetsLeftInStep.length === 0) handleNextStep();
     } else {
-        el.classList.add('error-flash');
+        // Erreur enregistrée silencieusement, sans feedback visuel
+        totalErrors++;
         consecutiveErrors++;
-        if (consecutiveErrors >= 2) { 
-            window.scrollTo(0, 0); 
-            document.getElementById('video-player').play(); 
-            consecutiveErrors = 0; 
+        if (consecutiveErrors >= 2) {
+            window.scrollTo(0, 0);
+            document.getElementById('video-player').play();
+            consecutiveErrors = 0;
         }
-        setTimeout(() => el.classList.remove('error-flash'), 1000);
     }
 }
 
@@ -467,13 +503,12 @@ function handleNextStep() {
     setTimeout(() => {
         if (currentStep < currentExo.etapes.length) {
             const container = document.getElementById('exercise-container');
-            container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderQuiEstCe(currentCategory, currentExo);
+            const renderFn = currentCategory.id === 'cat_qui_est_ce_garder' ? renderQuiEstCeGarder : renderQuiEstCe;
+            container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderFn(currentCategory, currentExo);
         } else {
             const endTime = Date.now();
             const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
-            const dateStr = new Date().toLocaleString();
-            
-            sendDataToGoogle(sessionID, dateStr, currentExo.id, durationSeconds + "s");
+            sendDataToSupabase(currentExo.id, parseFloat(durationSeconds), null, null, totalErrors);
 
             showFinishModal();
             showMenu();
@@ -490,6 +525,98 @@ function isAlreadyRemoved(id) {
         }
     }
     return removedSoFar.includes(id);
+}
+
+// --- MODE GARDER ---
+
+// Vérifie si un animal est exclu du jeu dans le mode "garder"
+// (absent des indices valides de l'étape précédente)
+function isEliminatedGarder(id) {
+    if (currentStep === 0) return false;
+    return !currentExo.etapes[currentStep - 1].indices_a_valider.includes(id);
+}
+
+// Génère la grille d'animaux pour le mode "garder" :
+// tous grisés au départ, l'utilisateur sélectionne les bons
+function renderQuiEstCeGarder(category, exo) {
+    window.scrollTo(0, 0);
+    consecutiveErrors = 0;
+    isClickable = true;
+    const etape = exo.etapes[currentStep];
+    targetsLeftInStep = [...etape.indices_a_valider];
+
+    return `
+        <div class="step-counter">Étape ${currentStep + 1} / ${exo.etapes.length}</div>
+        <video id="video-player" class="video-main" controls autoplay src="${etape.video}"></video>
+        <div id="grille-garder" class="grid-elimination">
+            ${category.banque_animaux.map(a => {
+                const eliminated = isEliminatedGarder(a.id);
+                const cssClass = eliminated ? 'barred-out' : 'grised-out';
+                return `
+                <div class="animal-card ${cssClass}" id="animal-${a.id}"
+                     ${!eliminated ? `onclick="checkGarder(${a.id})"` : ''}>
+                    <img src="${a.img}">
+                </div>`;
+            }).join('')}
+        </div>`;
+}
+
+// Gère le clic sur un animal dans le mode "garder"
+function checkGarder(id) {
+    if (!isClickable) return;
+    isClickable = false;
+    const el = document.getElementById(`animal-${id}`);
+    const grille = document.getElementById('grille-garder');
+    grille.classList.add('click-locked');
+
+    restoreClickTimerGarder = setTimeout(() => {
+        isClickable = true;
+        grille.classList.remove('click-locked');
+    }, 800);
+
+    if (targetsLeftInStep.includes(id)) {
+        // Bonne sélection
+        el.classList.remove('grised-out');
+        el.classList.add('correct-kept');
+        el.onclick = null;
+        consecutiveErrors = 0;
+        targetsLeftInStep = targetsLeftInStep.filter(tid => tid !== id);
+        if (targetsLeftInStep.length === 0) handleNextStepGarder();
+    } else {
+        // Erreur enregistrée silencieusement, sans feedback visuel
+        totalErrors++;
+        consecutiveErrors++;
+        if (consecutiveErrors >= 2) {
+            window.scrollTo(0, 0);
+            document.getElementById('video-player').play();
+            consecutiveErrors = 0;
+        }
+    }
+}
+
+// Passe à l'étape suivante dans le mode "garder"
+function handleNextStepGarder() {
+    // Annule le timer de restauration du clic pour garder la grille verrouillée
+    clearTimeout(restoreClickTimerGarder);
+    isClickable = false;
+
+    currentStep++;
+    const grille = document.getElementById('grille-garder');
+    if (grille) grille.classList.add('step-validated');
+
+    setTimeout(() => {
+        isClickable = true;
+        if (currentStep < currentExo.etapes.length) {
+            const container = document.getElementById('exercise-container');
+            container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderQuiEstCeGarder(currentCategory, currentExo);
+        } else {
+            const endTime = Date.now();
+            const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
+            sendDataToSupabase(currentExo.id, parseFloat(durationSeconds), null, null, totalErrors);
+            showFinishModal();
+            showMenu();
+        }
+    }, 3000);
 }
 
 // --- UTILITAIRES VIDÉO ET MODALES ---
@@ -591,6 +718,37 @@ function closeConsigneModal() {
 
 function showFinishModal() {
     const modal = document.getElementById('finish-modal');
+    const msgEl = document.getElementById('finish-message');
+
+    if (currentCategory && currentCategory.type === 'grille_elimination') {
+        // Score pour Qui est-ce ? (basé sur les erreurs)
+        let appreciation = '';
+        if (totalErrors === 0) appreciation = 'Parfait, aucune erreur !';
+        else if (totalErrors <= 2) appreciation = 'Tres bien !';
+        else if (totalErrors <= 5) appreciation = 'Bien joué !';
+        else appreciation = "Continue de t'entrainer !";
+
+        msgEl.innerHTML = `
+            <div class="score-display">
+                <span class="score-fraction">${totalErrors} erreur${totalErrors > 1 ? 's' : ''}</span>
+                <span class="score-appreciation">${appreciation}</span>
+            </div>`;
+    } else {
+        // Score QCM pour Anaphore et Vrai ou Faux
+        const pct = totalQuestions > 0 ? Math.round((currentScore / totalQuestions) * 100) : 0;
+        let appreciation = '';
+        if (pct === 100) appreciation = 'Parfait !';
+        else if (pct >= 80) appreciation = 'Excellent !';
+        else if (pct >= 60) appreciation = 'Bien joué !';
+        else appreciation = "Continue de t'entrainer !";
+
+        msgEl.innerHTML = `
+            <div class="score-display">
+                <span class="score-fraction">${currentScore} / ${totalQuestions}</span>
+                <span class="score-appreciation">${appreciation}</span>
+            </div>`;
+    }
+
     modal.classList.remove('hidden');
 }
 
@@ -610,8 +768,8 @@ function goToSubMenu() {
         startCategory('vrai_faux_group');
     } else if (currentCategory.id.includes('anaphore')) {
         startCategory('anaphore_group');
-    } else if (currentCategory.id === 'cat_qui_est_ce') {
-        startCategory('cat_qui_est_ce');
+    } else if (currentCategory.id.includes('qui_est_ce')) {
+        startCategory('qui_est_ce_group');
     } else {
         goToHome();
     }
@@ -622,40 +780,117 @@ function goToHome() {
     showMenu();
 }
 
-function sendDataToGoogle(user, date, exo, temps) {
-    const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfyHVDqMvl_SEkjbFy74LSONtsZCcO1Xuu4GGFrZ4EqF07tJQ/formResponse";
+// --- IDENTIFICATION ---
 
-    const iframe = document.createElement("iframe");
-    iframe.name = "hidden_iframe";
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
+function switchIdentMode(mode) {
+    identMode = mode;
+    document.getElementById('form-eleve').classList.toggle('hidden', mode !== 'eleve');
+    document.getElementById('form-classe').classList.toggle('hidden', mode !== 'classe');
+    document.getElementById('btn-mode-eleve').classList.toggle('active', mode === 'eleve');
+    document.getElementById('btn-mode-classe').classList.toggle('active', mode === 'classe');
+    document.getElementById('ident-error').classList.add('hidden');
+}
 
-    const form = document.createElement("form");
-    form.action = formURL;
-    form.method = "POST";
-    form.target = "hidden_iframe";
-    form.style.display = "none";
+function capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
 
-    const fields = {
-        "entry.1475131332": user,
-        "entry.464227689": date,
-        "entry.723616511": exo,
-        "entry.2104479172": temps
-    };
+function submitIdentification() {
+    const errorEl = document.getElementById('ident-error');
+    errorEl.classList.add('hidden');
 
-    for (const [key, value] of Object.entries(fields)) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = value;
-        form.appendChild(input);
+    if (identMode === 'eleve') {
+        const nom    = document.getElementById('input-nom').value.trim();
+        const animal = document.getElementById('input-animal').value.trim();
+        if (!nom || !animal) {
+            errorEl.classList.remove('hidden');
+            return;
+        }
+        userIdentifier = capitalizeFirst(nom) + '_' + capitalizeFirst(animal);
+    } else {
+        const classe = document.getElementById('input-classe').value.trim();
+        if (!classe) {
+            errorEl.classList.remove('hidden');
+            return;
+        }
+        userIdentifier = classe;
     }
 
-    document.body.appendChild(form);
-    form.submit();
-    
-    setTimeout(() => {
-        document.body.removeChild(form);
-        document.body.removeChild(iframe);
-    }, 2000);
+    localStorage.setItem('userIdentifier', userIdentifier);
+    document.getElementById('identification-modal').classList.add('hidden');
+    updateUserDisplay();
+}
+
+function resetIdentification() {
+    localStorage.removeItem('userIdentifier');
+    userIdentifier = '';
+    // Réinitialise les champs
+    document.getElementById('input-nom').value    = '';
+    document.getElementById('input-animal').value = '';
+    document.getElementById('input-classe').value = '';
+    document.getElementById('ident-error').classList.add('hidden');
+    switchIdentMode('eleve');
+    document.getElementById('settings-panel').classList.add('hidden');
+    document.getElementById('identification-modal').classList.remove('hidden');
+    updateUserDisplay();
+}
+
+function updateUserDisplay() {
+    const el = document.getElementById('current-user-display');
+    if (el) el.textContent = userIdentifier || '—';
+}
+
+// --- GESTION DES THEMES ---
+
+function toggleSettingsPanel() {
+    const panel = document.getElementById('settings-panel');
+    panel.classList.toggle('hidden');
+}
+
+function setTheme(theme) {
+    document.body.classList.remove('theme-clair', 'theme-sombre', 'theme-ludique');
+    if (theme !== 'clair') {
+        document.body.classList.add('theme-' + theme);
+    }
+    localStorage.setItem('theme', theme);
+
+    // Marque le thème actif dans le panneau
+    document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('theme-active'));
+    const activeCard = document.querySelector('.theme-' + theme + '-preview');
+    if (activeCard) activeCard.classList.add('theme-active');
+}
+
+// Ferme le panneau si on clique en dehors
+document.addEventListener('click', function(e) {
+    const panel = document.getElementById('settings-panel');
+    const btn   = document.getElementById('btn-settings');
+    if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+        panel.classList.add('hidden');
+    }
+});
+
+// Application du thème sauvegardé au chargement
+(function() {
+    const saved = localStorage.getItem('theme') || 'ludique';
+    setTheme(saved);
+})();
+
+function sendDataToSupabase(exercice, dureeSecondes, scoreCorrect, scoreTotal, nbErreurs) {
+    fetch(SUPABASE_URL + '/rest/v1/statistiques', {
+        method: 'POST',
+        headers: {
+            'apikey':        SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type':  'application/json',
+            'Prefer':        'return=minimal'
+        },
+        body: JSON.stringify({
+            utilisateur:    userIdentifier,
+            exercice:       exercice,
+            score_correct:  scoreCorrect,
+            score_total:    scoreTotal,
+            nb_erreurs:     nbErreurs,
+            duree_secondes: dureeSecondes
+        })
+    }).catch(err => console.error('Erreur Supabase :', err));
 }

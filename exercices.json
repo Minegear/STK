@@ -1,11 +1,11 @@
 {
   "categories": [
     {
-      "id": "cat_qui_est_ce",
-      "groupe": "qui_est_ce",
-      "nom": "Qui est-ce ? (Élimination)",
+      "id": "cat_qui_est_ce_garder",
+      "groupe": "qui_est_ce_group",
+      "nom": "Qui est-ce ?",
       "type": "grille_elimination",
-      "consigne_texte" : "Regarde bien la vidéo pour connaître les caractéristiques de l'animal. Clique ensuite sur les animaux qui ne correspondent pas pour les éliminer de la grille.",
+      "consigne_texte" : "Regarde bien la vidéo pour connaître les caractéristiques de l'animal. Clique ensuite sur les animaux qui correspondent à ce qui a été décrit.",
       "config": { "colonnes": 6, "lignes": 4 },
       "banque_animaux": [
             {"id": 0, "nom": "Chat", "img": "assets/images/qui_est_ce/chat.jpg"},
@@ -35,32 +35,180 @@
         ],
       "exercices": [
         {
+          "id": "qec_pieuvre",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/Pouvoir_immerger_sous_dehors_eau.mp4",
+              "indices_a_valider": [3, 11, 12, 13, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Queue_non.mov",
+              "indices_a_valider": [3, 11]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Deplacer_lateral_non.mov",
+              "indices_a_valider": [3]
+            }
+          ]
+        },
+        {
           "id": "qec_rhinoceros",
           "titre": "Trouve l'animal mystère",
           "etapes": [
             {
-              "video": "assets/videos/qui_est_ce/voler_pas_savoir.mp4",
+              "video": "assets/videos/qui_est_ce/Voler_non.mov",
+
+              "indices_a_valider": [0, 1, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16, 19, 20, 21, 22, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Taches_non.mp4",
+              "indices_a_valider": [0, 1, 3, 4, 6, 9, 11, 12, 13, 15, 16, 19, 20, 21, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Griffes_non.mp4",
+              "indices_a_valider": [1, 3, 4, 6, 11, 12, 13, 15, 16, 19, 20, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Corps_couleur_unique.mp4",
+              "indices_a_valider": [4, 12, 15, 16, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Elephant_lala.mp4",
+              "indices_a_valider": [4, 12, 15]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Animal_corne_nez.mp4",
+              "indices_a_valider": [4]
+            }
+          ]
+        },
+        {
+          "id": "qec_chevre",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/Griffes_non.mp4",
+              "indices_a_valider": [2, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Sabots_lala.mp4",
+              "indices_a_valider": [1, 5, 6, 8, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Animal_traire.mp4",
+              "indices_a_valider": [1, 8]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Taches_non.mp4",
+              "indices_a_valider": [1]
+            }
+          ]
+        },
+        {
+          "id": "qec_perroquet",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/Corne_tete_corne_nez_non.mp4",
+              "indices_a_valider": [0, 2, 3, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Arbre_poser_pouvoir.mp4",
+              "indices_a_valider": [2, 7, 10, 14, 17, 18]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Bec_pointu_non.mp4",
+              "indices_a_valider": [7, 10, 18]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Poser_epaules_pouvoir.mp4",
+              "indices_a_valider": [10]
+            }
+          ]
+        },
+        {
+          "id": "qec_guepard",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/Sabots_elephant_non.mp4",
+              "indices_a_valider": [0, 2, 3, 7, 9, 10, 11, 13, 14, 16, 17, 18, 19, 21, 22, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Immerger_sous_dehors_non.mp4",
+              "indices_a_valider": [0, 2, 7, 9, 10, 14, 16, 17, 18, 19, 22, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Griffes_lala.mp4",
+              "indices_a_valider": [1, 9, 22, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Taches_lala.mp4",
+              "indices_a_valider": [22]
+            }
+          ]
+        }
+        
+      ]
+    },
+    {
+      "id": "cat_qui_est_ce_eliminer",
+      "groupe": "qui_est_ce_group",
+      "nom": "Qui est-ce ?",
+      "type": "grille_elimination",
+      "consigne_texte" : "Regarde bien la vidéo pour connaître les caractéristiques de l'animal. Clique ensuite sur les animaux qui ne correspondent pas pour les exclure",
+      "config": { "colonnes": 6, "lignes": 4 },
+      "banque_animaux": [
+            {"id": 0, "nom": "Chat", "img": "assets/images/qui_est_ce/chat.jpg"},
+            {"id": 1, "nom": "Chèvre", "img": "assets/images/qui_est_ce/chevre.jpg"},
+            {"id": 2, "nom": "Paon", "img": "assets/images/qui_est_ce/paon.jpg"},
+            {"id": 3, "nom": "Pieuvre", "img": "assets/images/qui_est_ce/pieuvre.jpg"},
+            {"id": 4, "nom": "Rhinocéros", "img": "assets/images/qui_est_ce/rhinoceros.jpg"},
+            {"id": 5, "nom": "Girafe", "img": "assets/images/qui_est_ce/girafe.jpg"},
+            {"id": 6, "nom": "Gazelle", "img": "assets/images/qui_est_ce/gazelle.jpeg"},
+            {"id": 7, "nom": "Mouette", "img": "assets/images/qui_est_ce/mouette.jpg"},
+            {"id": 8, "nom": "Vache", "img": "assets/images/qui_est_ce/vache.jpg"},
+            {"id": 9, "nom": "Lion", "img": "assets/images/qui_est_ce/lion.jpg"},
+            {"id": 10, "nom": "Perroquet", "img": "assets/images/qui_est_ce/perroquet.jpg"},
+            {"id": 11, "nom": "Crabe", "img": "assets/images/qui_est_ce/crabe.jpg"},
+            {"id": 12, "nom": "Hippopotame", "img": "assets/images/qui_est_ce/hippopotame.jpg"},
+            {"id": 13, "nom": "Poisson", "img": "assets/images/qui_est_ce/poisson.jpg"},
+            {"id": 14, "nom": "Pivert", "img": "assets/images/qui_est_ce/pivert.jpg"},
+            {"id": 15, "nom": "Elephant", "img": "assets/images/qui_est_ce/elephant.jpg"},
+            {"id": 16, "nom": "Serpent", "img": "assets/images/qui_est_ce/serpent.jpg"},
+            {"id": 17, "nom": "Pigeon", "img": "assets/images/qui_est_ce/pigeon.jpg"},
+            {"id": 18, "nom": "Toucan", "img": "assets/images/qui_est_ce/toucan.jpg"},
+            {"id": 19, "nom": "Cobra", "img": "assets/images/qui_est_ce/cobra.jpg"},
+            {"id": 20, "nom": "Zèbre", "img": "assets/images/qui_est_ce/zebre.jpg"},
+            {"id": 21, "nom": "Dauphin", "img": "assets/images/qui_est_ce/dauphin.jpg"},
+            {"id": 22, "nom": "Guepard", "img": "assets/images/qui_est_ce/guepard.jpg"},
+            {"id": 23, "nom": "Taupe", "img": "assets/images/qui_est_ce/taupe.jpg"}
+        ],
+      "exercices": [
+        {
+          "id": "qec_cobra",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/Voler_non.mov",
               "indices_a_retirer": [2, 7, 10, 14, 17, 18]
             },
             {
-              "video": "assets/videos/qui_est_ce/animal_taches_ya_pas.mp4",
-              "indices_a_retirer": [5, 8, 22]
+              "video": "assets/videos/qui_est_ce/Griffes_non.mp4",
+              "indices_a_retirer": [0, 9, 22, 23]
             },
             {
-              "video": "assets/videos/qui_est_ce/griffes_longues_ya_pas.mp4",
-              "indices_a_retirer": [0, 9, 23]
+              "video": "assets/videos/qui_est_ce/Sabots_elephant_non.mp4",
+              "indices_a_retirer": [1, 4, 5, 6, 8, 12, 15, 20]
             },
             {
-              "video": "assets/videos/qui_est_ce/animal_corps_couleur_unique.mp4",
-              "indices_a_retirer": [1, 3, 6, 11, 13, 19, 20]
+              "video": "assets/videos/qui_est_ce/Immerger_sous_dehors_non.mp4",
+              "indices_a_retirer": [3, 11, 13, 21]
             },
             {
-              "video": "assets/videos/qui_est_ce/patte_elephant_ya.mp4",
-              "indices_a_retirer": [16, 21]
-            },
-            {
-              "video": "assets/videos/qui_est_ce/marcher_elephant_corne_nez.mp4",
-              "indices_a_retirer": [12, 15]
+              "video": "assets/videos/qui_est_ce/Tete_cobra_lala.mp4",
+              "indices_a_retirer": [16]
             }
           ]
         },
@@ -69,19 +217,19 @@
           "titre": "Trouve l'animal mystère",
           "etapes": [
             {
-              "video": "assets/videos/qui_est_ce/animal_corps_couleur_unique.mp4",
+              "video": "assets/videos/qui_est_ce/Corps_couleur_unique.mp4",
               "indices_a_retirer": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 22]
             },
             {
-              "video": "assets/videos/qui_est_ce/poils_ya_pas.mov",
+              "video": "assets/videos/qui_est_ce/Poils_non.mp4",
               "indices_a_retirer": [0, 23]
             },
             {
-              "video": "assets/videos/qui_est_ce/marcher_prof_elephant.mp4",
+              "video": "assets/videos/qui_est_ce/Elephant_lala.mp4",
               "indices_a_retirer": [12, 16, 21]
             },
             {
-              "video": "assets/videos/qui_est_ce/petites_oreilles_rondes_ya_pas.mov",
+              "video": "assets/videos/qui_est_ce/Petites_oreilles_non.mp4",
               "indices_a_retirer": [5, 13]
             }
           ]
@@ -91,20 +239,64 @@
           "titre": "Trouve l'animal mystère",
           "etapes": [
             {
-              "video": "assets/videos/qui_est_ce/tete_animal_queue_longue_la.mov",
+              "video": "assets/videos/qui_est_ce/Longue_queue_lala.mp4",
               "indices_a_retirer": [2, 3, 7, 10, 11, 13, 14, 16, 17, 18, 19, 23]
             },
             {
-              "video": "assets/videos/qui_est_ce/corps_couleur_unique_ya_pas.mov",
+              "video": "assets/videos/qui_est_ce/Corps_couleur_unique_non.mp4",
               "indices_a_retirer": [0, 4, 12, 15, 21]
             },
             {
-              "video": "assets/videos/qui_est_ce/rayures_la.mov",
+              "video": "assets/videos/qui_est_ce/Rayures_lala.mp4",
               "indices_a_retirer": [1, 5, 6, 8, 9, 22]
             }
           ]
+        },
+        {
+          "id": "qec_pivert",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/Plumes_lala.mp4",
+              "indices_a_retirer": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 22]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Bec_pointu_lala.mp4",
+              "indices_a_retirer": [0, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Grand_gros_non.mp4",
+              "indices_a_retirer": [12, 16, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Tronc_pouvoir_poser.mp4",
+              "indices_a_retirer": [5, 13]
+            }
+          ]
+        },
+        {
+          "id": "qec_gazelle",
+          "titre": "Trouve l'animal mystère",
+          "etapes": [
+            {
+              "video": "assets/videos/qui_est_ce/Pattes_oiseau_non.mp4",
+              "indices_a_retirer": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 22]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Sabots_lala.mp4",
+              "indices_a_retirer": [0, 23]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Rayures_non.mp4",
+              "indices_a_retirer": [12, 16, 21]
+            },
+            {
+              "video": "assets/videos/qui_est_ce/Cornes_tete_lala.mp4",
+              "indices_a_retirer": [5, 13]
+            }
+          ]
         }
-      ]
+        ]
     },
     {
         "id": "cat_vrai_faux_image",
@@ -115,7 +307,7 @@
         "questions": [
         {
             "id": "vfi_bol",
-            "video": "assets/videos/vrai_faux/Bol_de_riz.mov",
+            "video": "assets/videos/vrai_faux/Bol_de_riz.mp4",
             "options": [
                 "assets/images/vrai_faux/riz_baguettes_bol.png",
                 "assets/images/vrai_faux/riz_cuiller_bol.png",
@@ -125,17 +317,17 @@
         },
         {
             "id": "vfi_brochette",
-            "video": "assets/videos/vrai_faux/Brochette.mov",
+            "video": "assets/videos/vrai_faux/Mais.mp4",
             "options": [
             "assets/images/vrai_faux/mais.png",
             "assets/images/vrai_faux/brochettes.png",
             "assets/images/vrai_faux/pasteque.png"
             ],
-            "reponse": 1
+            "reponse": 0
         },
         {
             "id": "vfi_verre",
-            "video": "assets/videos/vrai_faux/Verre.mov",
+            "video": "assets/videos/vrai_faux/Verre_eau.mp4",
             "options": [
                 "assets/images/vrai_faux/verre_champagne.png",
                 "assets/images/vrai_faux/verre_liqueur.png",
@@ -145,7 +337,7 @@
         },
         {
             "id": "vfi_cerise",
-            "video": "assets/videos/vrai_faux/cerise.MOV",
+            "video": "assets/videos/vrai_faux/Cerise.mp4",
             "options": [
                 "assets/images/vrai_faux/cerises.png",
                 "assets/images/vrai_faux/abricots.png",
@@ -155,7 +347,7 @@
         },
         {
             "id": "vfi_tomcerise",
-            "video": "assets/videos/vrai_faux/Tomates_cerises.MOV",
+            "video": "assets/videos/vrai_faux/Tomates_cerises.mp4",
             "options": [
                 "assets/images/vrai_faux/pommes.png",
                 "assets/images/vrai_faux/chips.png",
@@ -165,7 +357,7 @@
         },
         {
             "id": "vfi_paille",
-            "video": "assets/videos/vrai_faux/Paille.mov",
+            "video": "assets/videos/vrai_faux/Paille_verre.mp4",
             "options": [
                 "assets/images/vrai_faux/paille_bol.png",
                 "assets/images/vrai_faux/paille_verre.png",
@@ -175,7 +367,7 @@
         },
         {
             "id": "vfi_hamburger",
-            "video": "assets/videos/vrai_faux/Hamburger.mov",
+            "video": "assets/videos/vrai_faux/Hamburger.mp4",
             "options": [
                 "assets/images/vrai_faux/hamburger.png",
                 "assets/images/vrai_faux/croque_monsieur.png",
@@ -185,17 +377,17 @@
         },
         {
             "id": "vfi_mikado",
-            "video": "assets/videos/vrai_faux/Mikado.mov",
+            "video": "assets/videos/vrai_faux/Mikado.mp4",
             "options": [
                 "assets/images/vrai_faux/paquet_mikado.png",
                 "assets/images/vrai_faux/paquet_belvita.png",
-                "assets/images/vrai_faux/boite_haribo.png"
+                "assets/images/vrai_faux/boite_haribo.jpeg"
             ],
             "reponse": 0
         },
         {
             "id": "vfi_biscuits",
-            "video": "assets/videos/vrai_faux/Biscuits.mov",
+            "video": "assets/videos/vrai_faux/Biscuits.mp4",
             "options": [
                 "assets/images/vrai_faux/spaghetti.png",
                 "assets/images/vrai_faux/cookies.png",
@@ -205,7 +397,7 @@
         },
         {
             "id": "vfi_miel",
-            "video": "assets/videos/vrai_faux/Miel.mov",
+            "video": "assets/videos/vrai_faux/Miel_ours.mp4",
             "options": [
                 "assets/images/vrai_faux/miel_cuiller.png",
                 "assets/images/vrai_faux/miel_ours.png",
@@ -225,9 +417,9 @@
             "id": "vfv_kebab",
             "image": "assets/images/vrai_faux/kebab.png",
             "options": [
-                "assets/videos/vrai_faux/Hamburger.mov",
-                "assets/videos/vrai_faux/Kebab.MOV",
-                "assets/videos/vrai_faux/panini.mov"
+                "assets/videos/vrai_faux/Hamburger.mp4",
+                "assets/videos/vrai_faux/Kebab.mp4",
+                "assets/videos/vrai_faux/Panini.mp4"
             ],
             "reponse": 1
         },
@@ -235,9 +427,9 @@
             "id": "vfv_sucette",
             "image": "assets/images/vrai_faux/sucette.png",
             "options": [
-                "assets/videos/vrai_faux/Glace.MOV",
-                "assets/videos/vrai_faux/Poulet.mov",
-                "assets/videos/vrai_faux/Sucette.MOV"
+                "assets/videos/vrai_faux/Glace.mp4",
+                "assets/videos/vrai_faux/Cuisse_poulet.mp4",
+                "assets/videos/vrai_faux/Sucette.mp4"
             ],
             "reponse": 2
         },
@@ -245,9 +437,9 @@
             "id": "vfv_biere",
             "image": "assets/images/vrai_faux/biere.png",
             "options": [
-                "assets/videos/vrai_faux/Biere.mov",
-                "assets/videos/vrai_faux/Bol.mov",
-                "assets/videos/vrai_faux/Verre.mov"
+                "assets/videos/vrai_faux/Biere.mp4",
+                "assets/videos/vrai_faux/Bol.mp4",
+                "assets/videos/vrai_faux/Verre_eau.mp4"
             ],
             "reponse": 0
         },
@@ -255,9 +447,9 @@
             "id": "vfv_pizza",
             "image": "assets/images/vrai_faux/pizza.png",
             "options": [
-                "assets/videos/vrai_faux/Galette_frangipane.mov",
-                "assets/videos/vrai_faux/Pizza.mov",
-                "assets/videos/vrai_faux/spaghetti_avec_doigt.mov"
+                "assets/videos/vrai_faux/Part_gateau.mp4",
+                "assets/videos/vrai_faux/Pizza.mp4",
+                "assets/videos/vrai_faux/Spaghetti_avec_doigt.mp4"
             ],
             "reponse": 1
         },
@@ -265,9 +457,9 @@
             "id": "vfv_avocat",
             "image": "assets/images/vrai_faux/avocat.png",
             "options": [
-                "assets/videos/vrai_faux/Avocat.MOV",
-                "assets/videos/vrai_faux/Kiwi.MOV",
-                "assets/videos/vrai_faux/Pamplemousse.MOV"
+                "assets/videos/vrai_faux/Avocat.mp4",
+                "assets/videos/vrai_faux/Kiwi.mp4",
+                "assets/videos/vrai_faux/Pamplemousse.mp4"
             ],
             "reponse": 0
         }
