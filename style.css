@@ -598,35 +598,58 @@ header {
     transform: scale(0.9);
 }
 
-/* Mode GARDER — animal non sélectionné à l'étape précédente : barré */
-.barred-out {
-    opacity: 0.3;
+/* Mode GARDER — animal non sélectionnable aux étapes suivantes : grisé */
+.garder-excluded {
+    opacity: 0.25;
     filter: grayscale(100%);
     pointer-events: none;
     transform: scale(0.9);
-    position: relative;
 }
 
-.barred-out::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background:
-        linear-gradient(to bottom right, transparent 44%, rgba(220, 38, 38, 0.75) 44%, rgba(220, 38, 38, 0.75) 56%, transparent 56%),
-        linear-gradient(to bottom left,  transparent 44%, rgba(220, 38, 38, 0.75) 44%, rgba(220, 38, 38, 0.75) 56%, transparent 56%);
-    border-radius: 5px;
+/* Animal sélectionné par l'utilisateur (encadré couleur thème) */
+.animal-selected {
+    border: 3px solid var(--accent-blue) !important;
+    box-shadow: 0 0 10px var(--accent-blue);
+    transform: scale(1.05);
+    transition: all 0.15s ease;
 }
 
-/* Mode GARDER — tous grisés au départ (étape 0) */
-.grised-out {
-    filter: grayscale(100%);
-    opacity: 0.35;
-    transition: filter 0.3s ease, opacity 0.3s ease;
+/* Feedback de validation — encadré vert clignotant */
+@keyframes blink-border-green {
+    0%, 100% { border-color: var(--success); box-shadow: 0 0 10px var(--success); }
+    50%       { border-color: transparent;   box-shadow: none; }
 }
 
-.grised-out:hover {
-    opacity: 0.55;
-    transform: scale(1.03);
+.blink-green {
+    border: 3px solid var(--success) !important;
+    animation: blink-border-green 0.7s infinite;
+    filter: none !important;
+    opacity: 1 !important;
+    pointer-events: none;
+}
+
+/* Feedback de validation — encadré rouge clignotant */
+@keyframes blink-border-red {
+    0%, 100% { border-color: var(--error); box-shadow: 0 0 10px var(--error); }
+    50%       { border-color: transparent; box-shadow: none; }
+}
+
+.blink-red {
+    border: 3px solid var(--error) !important;
+    animation: blink-border-red 0.7s infinite;
+    filter: none !important;
+    opacity: 1 !important;
+    pointer-events: none;
+}
+
+/* Légère vibration sur les mauvaises sélections de l'utilisateur */
+@keyframes pulse-size {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(0.93); }
+}
+
+.blink-red.was-selected {
+    animation: blink-border-red 0.7s infinite, pulse-size 0.5s ease-in-out infinite;
 }
 
 /* Mode GARDER — animal ayant survécu à l'étape précédente (étape 1+) */
@@ -789,6 +812,17 @@ header {
     font-size: 1.15rem;
     color: #475569;
     margin-top: 8px;
+}
+
+.score-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+    color: #475569;
 }
 
 /* Actions dans la modale de fin */
@@ -1017,6 +1051,22 @@ body.theme-ludique .btn-change-user:hover{ background: #f97316; color: white; }
     background: rgba(255, 255, 255, 0.3);
 }
 
+.btn-results {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    color: white;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.btn-results:hover { background: rgba(255, 255, 255, 0.3); }
+
 .settings-panel {
     position: fixed;
     top: 72px;
@@ -1159,3 +1209,206 @@ body.theme-ludique .score-fraction        { color: #f97316; font-size: 3.2rem; }
 body.theme-ludique .card-text-consigne    { border-left-color: #f97316; border-left-width: 7px; border-radius: 12px; }
 body.theme-ludique .consigne-screen       { border-radius: 24px; }
 body.theme-ludique .correct-border        { box-shadow: 0 0 20px #16a34a; }
+
+/* ==========================================================================
+   11. PAGE DE RESULTATS (vue professeur)
+   ========================================================================== */
+
+.results-page {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 10px;
+}
+
+.results-title {
+    color: var(--primary-blue);
+    margin-bottom: 4px;
+}
+
+.results-subtitle {
+    color: #64748b;
+    margin: 0 0 24px 0;
+}
+
+.results-loading, .results-empty, .results-error {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+    font-size: 1.1rem;
+}
+
+.results-error { color: var(--error); }
+
+/* Recherche utilisateurs */
+.users-search {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+    background: white;
+    color: var(--primary-blue);
+    transition: border-color 0.2s;
+}
+
+.users-search:focus { border-color: var(--accent-blue); }
+
+body.theme-sombre .users-search { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+body.theme-sombre .users-search:focus { border-color: #60a5fa; }
+body.theme-ludique .users-search { border-radius: 16px; border-color: #fed7aa; }
+body.theme-ludique .users-search:focus { border-color: #f97316; }
+
+/* Liste des utilisateurs */
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1.05rem;
+    text-align: left;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.user-card:hover {
+    border-color: var(--accent-blue);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.user-name { font-weight: 700; color: var(--primary-blue); }
+.user-arrow { font-size: 1.4rem; color: var(--accent-blue); }
+
+/* Blocs de date */
+.date-block {
+    margin-bottom: 28px;
+}
+
+.date-label {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    padding: 8px 14px;
+    background: var(--accent-blue);
+    color: white;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    display: inline-block;
+}
+
+/* Blocs de catégorie */
+.category-block {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 12px;
+}
+
+.category-label {
+    margin: 0 0 10px 0;
+    font-size: 1.05rem;
+    color: var(--primary-blue);
+    border-bottom: 2px solid var(--accent-blue);
+    padding-bottom: 8px;
+}
+
+.stat-summary {
+    background: #f0f7ff;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 14px;
+    font-size: 0.95rem;
+}
+
+/* Tableau de résultats */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.results-table tr {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.results-table tr:last-child { border-bottom: none; }
+
+.results-table td {
+    padding: 8px 10px;
+    vertical-align: middle;
+}
+
+.results-table .q-name {
+    font-weight: 700;
+    color: var(--primary-blue);
+    width: 40%;
+}
+
+.results-table .q-time {
+    text-align: right;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.results-table .correct   { color: #16a34a; font-weight: 700; }
+.results-table .incorrect { color: #dc2626; font-weight: 700; }
+.q-detail { font-size: 0.82rem; color: #94a3b8; font-weight: 400; }
+
+/* Thème sombre — résultats */
+body.theme-sombre .user-card      { background: #1e293b; border-color: #334155; }
+body.theme-sombre .user-card:hover{ border-color: #60a5fa; }
+body.theme-sombre .category-block { background: #1e293b; border-color: #334155; }
+body.theme-sombre .stat-summary   { background: #0f172a; color: #93c5fd; }
+body.theme-sombre .results-table .q-name { color: #93c5fd; }
+body.theme-sombre .date-label     { background: #60a5fa; color: #0f172a; }
+
+/* Thème ludique — résultats */
+body.theme-ludique .user-card     { border-radius: 20px; border-color: #fed7aa; }
+body.theme-ludique .user-card:hover { border-color: #f97316; }
+body.theme-ludique .category-block { border-radius: 20px; }
+
+/* ==========================================================================
+   12. CONFETTIS
+   ========================================================================== */
+
+#confetti-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.confetti-piece {
+    position: absolute;
+    top: -20px;
+    animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+    0%   { transform: translateY(0)     rotate(0deg);   opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(105vh) rotate(600deg); opacity: 0; }
+}
+body.theme-ludique .stat-summary  { background: #fff3e0; border-radius: 12px; }
+body.theme-ludique .date-label    { background: #f97316; border-radius: 14px; }

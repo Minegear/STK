@@ -13,6 +13,7 @@
                 &#9881;
             </button>
             <span id="nav-breadcrumb"><a href="#" onclick="showMenu()">Accueil</a></span>
+            <button class="btn-results hidden" id="btn-results" onclick="showResultsPage()">Resultats</button>
         </nav>
     </header>
 
@@ -59,6 +60,9 @@
                 <button class="ident-mode-btn" id="btn-mode-classe" onclick="switchIdentMode('classe')">
                     Classe
                 </button>
+                <button class="ident-mode-btn" id="btn-mode-professeur" onclick="switchIdentMode('professeur')">
+                    Professeur
+                </button>
             </div>
 
             <!-- Formulaire élève -->
@@ -75,6 +79,13 @@
             <div id="form-classe" class="ident-form hidden">
                 <label for="input-classe">Nom de la classe</label>
                 <input type="text" id="input-classe" placeholder="Ex : Classe B" maxlength="40"
+                       onkeydown="if(event.key==='Enter') submitIdentification()">
+            </div>
+
+            <!-- Formulaire professeur -->
+            <div id="form-professeur" class="ident-form hidden">
+                <label for="input-password">Mot de passe</label>
+                <input type="password" id="input-password" placeholder="••••••••••••"
                        onkeydown="if(event.key==='Enter') submitIdentification()">
             </div>
 

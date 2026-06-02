@@ -6,6 +6,7 @@
       "nom": "Qui est-ce ?",
       "type": "grille_elimination",
       "consigne_texte" : "Regarde bien la vidéo pour connaître les caractéristiques de l'animal. Clique ensuite sur les animaux qui correspondent à ce qui a été décrit.",
+      "consignes": "assets/videos/qui_est_ce/consigne_qecgarder.mp4",
       "config": { "colonnes": 6, "lignes": 4 },
       "banque_animaux": [
             {"id": 0, "nom": "Chat", "img": "assets/images/qui_est_ce/chat.jpg"},
@@ -89,11 +90,11 @@
           "etapes": [
             {
               "video": "assets/videos/qui_est_ce/Griffes_non.mp4",
-              "indices_a_valider": [2, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+              "indices_a_valider": [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
             },
             {
               "video": "assets/videos/qui_est_ce/Sabots_lala.mp4",
-              "indices_a_valider": [1, 5, 6, 8, 21]
+              "indices_a_valider": [1, 5, 6, 8, 20]
             },
             {
               "video": "assets/videos/qui_est_ce/Animal_traire.mp4",
@@ -141,7 +142,7 @@
             },
             {
               "video": "assets/videos/qui_est_ce/Griffes_lala.mp4",
-              "indices_a_valider": [1, 9, 22, 23]
+              "indices_a_valider": [0, 9, 22, 23]
             },
             {
               "video": "assets/videos/qui_est_ce/Taches_lala.mp4",
@@ -158,6 +159,7 @@
       "nom": "Qui est-ce ?",
       "type": "grille_elimination",
       "consigne_texte" : "Regarde bien la vidéo pour connaître les caractéristiques de l'animal. Clique ensuite sur les animaux qui ne correspondent pas pour les exclure",
+      "consignes": "assets/videos/qui_est_ce/consigne_qecexclure.mp4",
       "config": { "colonnes": 6, "lignes": 4 },
       "banque_animaux": [
             {"id": 0, "nom": "Chat", "img": "assets/images/qui_est_ce/chat.jpg"},
@@ -218,19 +220,19 @@
           "etapes": [
             {
               "video": "assets/videos/qui_est_ce/Corps_couleur_unique.mp4",
-              "indices_a_retirer": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 22]
+              "indices_a_retirer": [1, 2, 3, 5, 6, 7, 8, 10, 14, 17, 18, 19, 20, 22]
             },
             {
               "video": "assets/videos/qui_est_ce/Poils_non.mp4",
-              "indices_a_retirer": [0, 23]
+              "indices_a_retirer": [0, 9, 23]
             },
             {
               "video": "assets/videos/qui_est_ce/Elephant_lala.mp4",
-              "indices_a_retirer": [12, 16, 21]
+              "indices_a_retirer": [11, 13, 16, 21]
             },
             {
               "video": "assets/videos/qui_est_ce/Petites_oreilles_rondes_non.mp4",
-              "indices_a_retirer": [5, 13]
+              "indices_a_retirer": [4, 12]
             }
           ]
         },
@@ -258,19 +260,19 @@
           "etapes": [
             {
               "video": "assets/videos/qui_est_ce/Plumes_lala.mp4",
-              "indices_a_retirer": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 22]
+              "indices_a_retirer": [0, 1, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 15, 16, 19, 20, 21, 22, 23]
             },
             {
               "video": "assets/videos/qui_est_ce/Bec_pointu_lala.mp4",
-              "indices_a_retirer": [0, 23]
+              "indices_a_retirer": [10, 18]
             },
             {
               "video": "assets/videos/qui_est_ce/Grand_gros_non.mp4",
-              "indices_a_retirer": [12, 16, 21]
+              "indices_a_retirer": [2]
             },
             {
               "video": "assets/videos/qui_est_ce/Tronc_pouvoir_poser.mp4",
-              "indices_a_retirer": [5, 13]
+              "indices_a_retirer": [17]
             }
           ]
         },
@@ -280,19 +282,19 @@
           "etapes": [
             {
               "video": "assets/videos/qui_est_ce/Pattes_oiseau_non.mp4",
-              "indices_a_retirer": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 22]
+              "indices_a_retirer": [2, 7, 10, 14, 17, 18]
             },
             {
               "video": "assets/videos/qui_est_ce/Sabots_lala.mp4",
-              "indices_a_retirer": [0, 23]
+              "indices_a_retirer": [0, 3, 4, 9, 11, 12, 13, 15, 16, 19, 21, 22, 23]
             },
             {
               "video": "assets/videos/qui_est_ce/Rayures_non.mp4",
-              "indices_a_retirer": [12, 16, 21]
+              "indices_a_retirer": [20]
             },
             {
               "video": "assets/videos/qui_est_ce/Cornes_tete_lala.mp4",
-              "indices_a_retirer": [5, 13]
+              "indices_a_retirer": [1, 5, 8]
             }
           ]
         }
@@ -304,16 +306,17 @@
         "nom": "Vocabulaire LSF",
         "type": "video_to_image",
         "consigne_texte": "Regarde bien ce qui est décrit, et sélectionne ce qui y correspond parmis les propositions.",
+        "consignes": "assets/videos/vrai_faux/consigne_imagetovideo.mp4",
         "questions": [
         {
             "id": "vfi_bol",
             "video": "assets/videos/vrai_faux/Bol_de_riz.mp4",
             "options": [
-                "assets/images/vrai_faux/riz_baguettes_bol.png",
                 "assets/images/vrai_faux/riz_cuiller_bol.png",
+                "assets/images/vrai_faux/riz_baguettes_bol.png",
                 "assets/images/vrai_faux/riz_baguettes_assiette.png"
             ],
-            "reponse": 0
+            "reponse": 1
         },
         {
             "id": "vfi_brochette",
@@ -379,18 +382,18 @@
             "id": "vfi_mikado",
             "video": "assets/videos/vrai_faux/Mikado.mp4",
             "options": [
-                "assets/images/vrai_faux/paquet_mikado.png",
+                "assets/images/vrai_faux/boite_haribo.jpeg",
                 "assets/images/vrai_faux/paquet_belvita.png",
-                "assets/images/vrai_faux/boite_haribo.jpeg"
+                "assets/images/vrai_faux/paquet_mikado.png"
             ],
-            "reponse": 0
+            "reponse": 2
         },
         {
             "id": "vfi_biscuits",
             "video": "assets/videos/vrai_faux/Biscuits.mp4",
             "options": [
                 "assets/images/vrai_faux/spaghetti.png",
-                "assets/images/vrai_faux/cookies.png",
+                "assets/images/vrai_faux/abricots.png",
                 "assets/images/vrai_faux/biscuits.png"
             ],
             "reponse": 2
@@ -412,6 +415,7 @@
         "groupe": "vrai_faux_group",
         "nom": "Vocabulaire LSF",
         "type": "image_to_video",
+        "consignes": "assets/videos/vrai_faux/consigne_videotoimage.mp4",
         "questions": [
         {
             "id": "vfv_kebab",
@@ -582,7 +586,7 @@
                 "options": [
                     "assets/videos/anaphore/Lou-bis.mov",
                     "assets/videos/anaphore/voiture.mov",
-                    "assets/videos/anaphore/vélo.mov"
+                    "assets/videos/anaphore/velo.mov"
                 ],
                 "reponse": 2
             },
