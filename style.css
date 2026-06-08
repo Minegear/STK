@@ -1286,6 +1286,13 @@ body.theme-ludique .correct-border        { box-shadow: 0 0 20px #16a34a; }
 }
 .results-user-header .results-title { margin-bottom: 0; }
 
+.export-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
 .btn-export-csv {
     background: none;
     border: 2px solid var(--primary-blue);
@@ -1302,6 +1309,16 @@ body.theme-ludique .correct-border        { box-shadow: 0 0 20px #16a34a; }
     background: var(--primary-blue);
     color: white;
 }
+.btn-export-csv.btn-export-single { font-size: 0.85rem; padding: 6px 12px; }
+.btn-export-csv.disabled,
+.btn-export-csv:disabled {
+    border-color: #cbd5e1;
+    color: #94a3b8;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+.btn-export-csv.disabled:hover,
+.btn-export-csv:disabled:hover { background: none; color: #94a3b8; }
 
 .results-subtitle {
     color: #64748b;

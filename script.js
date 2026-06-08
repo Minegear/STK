@@ -1,3 +1,15 @@
+// Coupe le son sur toutes les vidéos, présentes et futures
+(function() {
+    document.querySelectorAll('video').forEach(v => { v.muted = true; });
+    new MutationObserver(mutations => {
+        mutations.forEach(m => m.addedNodes.forEach(node => {
+            if (node.nodeType !== 1) return;
+            if (node.tagName === 'VIDEO') node.muted = true;
+            node.querySelectorAll && node.querySelectorAll('video').forEach(v => { v.muted = true; });
+        }));
+    }).observe(document.body, { childList: true, subtree: true });
+})();
+
 let currentData = null;
 let currentExo = null;
 let currentStep = 0;
@@ -87,7 +99,7 @@ function updateBreadcrumb(category = null, exo = null) {
         const index = list.findIndex(e => e.id === exo.id);
         const isGrille = currentCategory && currentCategory.type === 'grille_elimination';
         const name = index >= 0
-            ? (isGrille ? `Exercice ${index + 1}` : `Question ${index + 1}`)
+            ? (isGrille ? `Défi ${index + 1}` : `Question ${index + 1}`)
             : exo.id.split('_').pop().toUpperCase();
         html += ` > ${name}`;
     }
@@ -121,7 +133,7 @@ function showMenu() {
         <div class="card">
             <h3>${pillar.nom}</h3>
             <p>${pillar.desc}</p>
-            <button class="btn-play" onclick="startCategory('${pillar.id}')">Faire l'exercice</button>
+            <button class="btn-play" onclick="startCategory('${pillar.id}')">Faire le défi</button>
         </div>
     `).join('');
 }
@@ -154,7 +166,7 @@ function showConsigneVideoIfNeeded(category, onComplete) {
         function renderConsigneScreen(src, index, total) {
             container.innerHTML = `
                 <div class="consigne-screen">
-                    <h2>Consigne de l'exercice${total > 1 ? ` <span class="consigne-counter">${index}/${total}</span>` : ''}</h2>
+                    <h2>Consigne du défi${total > 1 ? ` <span class="consigne-counter">${index}/${total}</span>` : ''}</h2>
                     <video id="consigne-video" class="video-main" controls autoplay src="${src}"></video>
                     <div class="text-center" style="margin-top: 20px;">
                         <button class="btn-play btn-next-consigne" id="btn-next-consigne" style="padding: 15px 40px; font-size: 1.2rem; display: none;"
@@ -254,10 +266,10 @@ function showSubMenuAnaphore() {
             <button class="btn-help" onclick="openConsigneModal('anaphore_group')">?</button>
         </div>
         <div class="submenu-selection">
-            <h2>Choisissez l'exercice d'anaphore :</h2>
+            <h2>Choisissez ton défi d'anaphore :</h2>
             <div class="options-grid">
                 <button class="btn-variant" onclick="loadExerciseById('cat_anaphore_lsf', 'ana_lsf_pouce')">Anaphore LSF</button>
-                <button class="btn-variant" onclick="loadExerciseById('cat_anaphore_fr>lsf', 'ana_fr>lsf_compter')">Pont Français > LSF</button>
+                <button class="btn-variant" onclick="loadExerciseById('cat_anaphore_fr>lsf', 'ana_fr>lsf_cachecache')">Pont Français > LSF</button>
                 <button class="btn-variant" onclick="loadExerciseById('cat_anaphore_lsf>fr', 'ana_lsf>fr_cachecache')">Pont LSF > Français</button>
                 <button class="btn-variant" onclick="loadExerciseById('cat_anaphore_fr', 'ana_fr_ils')">Anaphore Français écrit</button>
             </div>
@@ -273,7 +285,7 @@ function showSubMenuQuiEstCe(category) {
         <div class="submenu-selection"><h2>Choisis ton défi :</h2><div class="options-grid">`;
     html += category.exercices.map((exo, index) => `
         <button class="btn-variant" onclick="loadExerciseById('${category.id}', '${exo.id}')">
-            Exercice ${index + 1}
+            Défi ${index + 1}
         </button>`).join('');
     html += `</div></div>`;
     document.getElementById('exercise-container').innerHTML = html;
@@ -394,6 +406,10 @@ function loadExercise(category, index) {
             const regex = new RegExp(`(${item.target})`, 'gi');
             text = text.replace(regex, `<span class="target-text">$1</span>`);
         }
+        if (item.textgras) {
+            const escaped = item.textgras.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            text = text.replace(new RegExp(escaped), `<strong>$&</strong>`);
+        }
         html += `<div class="card-text-consigne"><p>${text}</p></div>`;
     }
     html += `</div>`;
@@ -458,7 +474,7 @@ function showAnaphoreConsigne(category) {
 
     container.innerHTML = `
         <div class="consigne-screen">
-            <h2>Consigne de l'exercice</h2>
+            <h2>Consigne du défi</h2>
             <video class="video-main" controls autoplay src="${videoSrc}"></video>
             <div class="text-center" style="margin-top: 20px;">
                 <button class="btn-play" style="padding: 15px 40px; font-size: 1.2rem;" 
@@ -562,8 +578,13 @@ function validateStepEliminer() {
     });
 
     const stepDuration = parseFloat(((Date.now() - stepStartTime) / 1000).toFixed(2));
+    const getName = id => (currentCategory.banque_animaux.find(a => a.id === id) || {}).nom || id;
+    const infosErreurs = [
+        wrongSelected.length ? 'Mal sél.: ' + wrongSelected.map(getName).join(', ') : null,
+        missed.length        ? 'Oubliés: '  + missed.map(getName).join(', ')        : null,
+    ].filter(Boolean).join(' | ') || null;
     sendDataToSupabase(`${currentExo.id}_etape${currentStep + 1}`, currentCategory.type, null, stepErrors, stepDuration,
-        { nb_mauvaises_selections: wrongSelected.length, nb_oublis: missed.length });
+        { nb_mauvaises_selections: wrongSelected.length, nb_oublis: missed.length, infos_erreurs: infosErreurs });
 
     const btn = document.getElementById('btn-valider');
     if (btn) { btn.textContent = "J'ai compris"; btn.onclick = confirmUnderstoodEliminer; }
@@ -597,8 +618,13 @@ function validateStepGarder() {
     });
 
     const stepDuration = parseFloat(((Date.now() - stepStartTime) / 1000).toFixed(2));
+    const getName = id => (currentCategory.banque_animaux.find(a => a.id === id) || {}).nom || id;
+    const infosErreurs = [
+        wrongSelected.length ? 'Mal sél.: ' + wrongSelected.map(getName).join(', ') : null,
+        missed.length        ? 'Oubliés: '  + missed.map(getName).join(', ')        : null,
+    ].filter(Boolean).join(' | ') || null;
     sendDataToSupabase(`${currentExo.id}_etape${currentStep + 1}`, currentCategory.type, null, stepErrors, stepDuration,
-        { nb_mauvaises_selections: wrongSelected.length, nb_oublis: missed.length });
+        { nb_mauvaises_selections: wrongSelected.length, nb_oublis: missed.length, infos_erreurs: infosErreurs });
 
     const btn = document.getElementById('btn-valider');
     if (btn) { btn.textContent = "J'ai compris"; btn.onclick = confirmUnderstoodGarder; }
@@ -612,7 +638,6 @@ function confirmUnderstoodEliminer() {
         container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderQuiEstCe(currentCategory, currentExo);
     } else {
         showFinishModal();
-        showMenu();
     }
 }
 
@@ -624,7 +649,6 @@ function confirmUnderstoodGarder() {
         container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderQuiEstCeGarder(currentCategory, currentExo);
     } else {
         showFinishModal();
-        showMenu();
     }
 }
 
@@ -1244,10 +1268,30 @@ async function showUserResults(user) {
             });
         }
 
+        const exercicesPresents = new Set(rows.map(r => r.exercice));
+        const hasGroup = key => CSV_GROUPS[key].ids.some(id => exercicesPresents.has(id));
+        const u = user.replace(/'/g, "\\'");
+
+        const btnGroups = [
+            { key: 'qui_est_ce', label: 'Qui est-ce' },
+            { key: 'assosigne',  label: 'Assosigne'  },
+            { key: 'anaphore',   label: 'Anaphore'   },
+        ];
+
         let html = `<div class="results-page">
             <div class="results-user-header">
                 <h2 class="results-title">${user}</h2>
-                <button class="btn-export-csv" onclick="exportUserCSV('${user.replace(/'/g, "\\'")}')">⬇ Exporter CSV</button>
+                <div class="export-btn-group">
+                    <button class="btn-export-csv" onclick="exportUserCSV('${u}')" title="Tout exporter">⬇ Tout exporter</button>
+                    ${btnGroups.map(g => {
+                        const active = hasGroup(g.key);
+                        return `<button class="btn-export-csv btn-export-single${active ? '' : ' disabled'}"
+                            ${active ? `onclick="exportUserCSVGroup('${u}', '${g.key}')"` : 'disabled'}
+                            title="${active ? g.label : g.label + ' (aucune donnée)'}">
+                            ⬇ ${g.label}
+                        </button>`;
+                    }).join('')}
+                </div>
             </div>`;
 
         for (const date of dateOrder) {
@@ -1279,7 +1323,7 @@ async function showUserResults(user) {
                     html += `</table>`;
                 } else {
                     const totalErr = catRows.reduce((s, r) => s + (r.nb_erreurs || 0), 0);
-                    html += `<div class="stat-summary">${totalErr} erreur${totalErr > 1 ? 's' : ''} au total sur l'exercice</div>`;
+                    html += `<div class="stat-summary">${totalErr} erreur${totalErr > 1 ? 's' : ''} au total sur le défi</div>`;
                     html += `<table class="results-table">`;
                     catRows.forEach(r => {
                         const qid = r.question_id || '';
@@ -1313,11 +1357,13 @@ async function showUserResults(user) {
     }
 }
 
-function exportUserCSV(user) {
-    const rows = _currentUserRows;
-    if (!rows || rows.length === 0) return;
+const CSV_GROUPS = {
+    'qui_est_ce':  { label: 'qui_est_ce',  ids: ['cat_qui_est_ce_garder', 'cat_qui_est_ce_eliminer'] },
+    'assosigne':   { label: 'assosigne',   ids: ['cat_vrai_faux_image', 'cat_vrai_faux_vidéo'] },
+    'anaphore':    { label: 'anaphore',    ids: ['cat_anaphore_lsf', 'cat_anaphore_fr>lsf', 'cat_anaphore_lsf>fr', 'cat_anaphore_fr'] },
+};
 
-    // Calcul des stats par session
+function _buildSessionStats(rows) {
     const sessionStats = {};
     rows.forEach(r => {
         const sid = r.session_id || `__legacy__${r.exercice}`;
@@ -1328,45 +1374,84 @@ function exportUserCSV(user) {
         if (s.isQCM) {
             const correct = s.rows.filter(r => r.est_correct).length;
             const total   = s.rows.length;
-            s.score  = `${correct}/${total}`;
-            s.pct    = `${Math.round((correct / total) * 100)}%`;
+            s.score = `${correct} sur ${total}`;
+            s.pct   = `${Math.round((correct / total) * 100)}%`;
         } else {
             const totalErr = s.rows.reduce((acc, r) => acc + (r.nb_erreurs || 0), 0);
-            s.score  = `${totalErr} erreur${totalErr > 1 ? 's' : ''}`;
-            s.pct    = '—';
+            s.score = `${totalErr} erreur${totalErr > 1 ? 's' : ''}`;
+            s.pct   = '—';
         }
     });
+    return sessionStats;
+}
 
-    const cols = ['date_heure', 'utilisateur', 'age', 'session_id', 'session_score', 'session_pct',
-                  'exercice', 'question_id', 'type_exercice',
-                  'est_correct', 'nb_erreurs', 'nb_mauvaises_selections', 'nb_oublis', 'duree_secondes'];
+function _downloadCSV(user, groupKey, rows, sessionStats) {
+    if (rows.length === 0) return;
+    const group = CSV_GROUPS[groupKey];
+    // Colonnes internes → en-têtes CSV affichés
+    const colDefs = [
+        { key: 'date_heure',              header: 'date_heure'              },
+        { key: 'utilisateur',             header: 'utilisateur'             },
+        { key: 'age',                     header: 'age'                     },
+        { key: 'session_id',              header: 'session_id'              },
+        { key: 'session_score',           header: 'session_score'           },
+        { key: 'session_pct',             header: '% RC'                    },
+        { key: 'exercice',                header: 'exercice'                },
+        { key: 'question_id',             header: 'question_id'             },
+        { key: 'type_exercice',           header: 'type_exercice'           },
+        { key: 'est_correct',             header: 'est_correct'             },
+        { key: 'nb_erreurs',              header: 'nb_total_erreurs'        },
+        { key: 'nb_mauvaises_selections', header: 'nb_mauvaises_selections' },
+        { key: 'nb_oublis',               header: 'nb_oublis'               },
+        { key: 'duree_secondes',          header: 'TEMPS DE RÉACTION'       },
+        { key: 'infos_erreurs',           header: 'infos_erreurs'           },
+    ];
 
     const escape = v => {
         if (v == null) return '';
         const s = String(v);
-        return s.includes(',') || s.includes('"') || s.includes('\n')
-            ? `"${s.replace(/"/g, '""')}"` : s;
+        return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
     };
 
     const lines = [
-        cols.join(','),
+        colDefs.map(d => d.header).join(','),
         ...rows.map(r => {
             const sid   = r.session_id || `__legacy__${r.exercice}`;
             const stats = sessionStats[sid];
-            return cols.map(c => {
+            return colDefs.map(({ key: c }) => {
                 if (c === 'session_score') return escape(stats.score);
                 if (c === 'session_pct')   return escape(stats.pct);
                 if (c === 'exercice')      return escape(CATEGORY_LABELS[r[c]] || r[c]);
+                if (c === 'est_correct')   return r[c] == null ? '' : (r[c] ? 1 : 0);
                 return escape(r[c]);
             }).join(',');
         })
     ];
-
     const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `resultats_${user}_${new Date().toISOString().slice(0, 10)}.csv`;
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `resultats_${user}_${group.label}_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+}
+
+// Exporte tous les groupes d'un coup
+function exportUserCSV(user) {
+    const rows = _currentUserRows;
+    if (!rows || rows.length === 0) return;
+    const sessionStats = _buildSessionStats(rows);
+    Object.keys(CSV_GROUPS).forEach(key => {
+        const groupRows = rows.filter(r => CSV_GROUPS[key].ids.includes(r.exercice));
+        _downloadCSV(user, key, groupRows, sessionStats);
+    });
+}
+
+// Exporte un seul groupe
+function exportUserCSVGroup(user, groupKey) {
+    const rows = _currentUserRows;
+    if (!rows || rows.length === 0) return;
+    const sessionStats = _buildSessionStats(rows);
+    const groupRows = rows.filter(r => CSV_GROUPS[groupKey].ids.includes(r.exercice));
+    _downloadCSV(user, groupKey, groupRows, sessionStats);
 }
