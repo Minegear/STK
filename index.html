@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apprentissage LSF</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1">
 </head>
 <body>
     <header>
@@ -31,7 +31,7 @@
             </button>
             <button class="theme-card theme-ludique-preview" onclick="setTheme('ludique')">
                 <span class="theme-swatch swatch-ludique"></span>
-                <span class="theme-label">Mode ludique</span>
+                <span class="theme-label">Mode coloré</span>
             </button>
         </div>
         <hr class="settings-separator">
@@ -49,8 +49,9 @@
     <!-- Modal d'identification (s'affiche au premier lancement) -->
     <div id="identification-modal" class="modal-overlay ident-overlay">
         <div class="modal-content identification-card">
+            <button id="btn-close-ident" class="btn-close-ident hidden" onclick="closeIdentModal()" aria-label="Fermer">✕</button>
             <h2 class="ident-title">Bienvenue !</h2>
-            <p class="ident-subtitle">Identifiez-vous avant de commencer.</p>
+            <p class="ident-subtitle">Identifie-toi avant de commencer.</p>
 
             <!-- Sélecteur de mode -->
             <div class="ident-mode-selector">
@@ -72,6 +73,9 @@
                        onkeydown="if(event.key==='Enter') submitIdentification()">
                 <label for="input-animal">Animal totem</label>
                 <input type="text" id="input-animal" placeholder="Ex : Chat" maxlength="30"
+                       onkeydown="if(event.key==='Enter') submitIdentification()">
+                <label for="input-age">Âge</label>
+                <input type="number" id="input-age" placeholder="Ex : 8" min="3" max="100"
                        onkeydown="if(event.key==='Enter') submitIdentification()">
             </div>
 
@@ -95,7 +99,7 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=1"></script>
 
     <!-- Modal de fin d'exercice -->
     <div id="finish-modal" class="modal-overlay hidden">

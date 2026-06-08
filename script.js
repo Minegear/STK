@@ -15,8 +15,10 @@ let selectedAnimals = new Set();
 let stepStartTime = null;
 let stepErrors = 0;
 let userIdentifier = '';
+let userAge = null;
 let identMode = 'eleve';
 let isTeacher = false;
+let currentSessionId = null;
 
 // -----------------------------------------------------------------------
 // CONFIGURATION SUPABASE
@@ -40,6 +42,8 @@ fetch('exercices.json')
 
         if (savedId) {
             userIdentifier = savedId;
+            const savedAge = localStorage.getItem('userAge');
+            if (savedAge !== null) userAge = parseInt(savedAge);
             updateUserDisplay();
         }
         if (savedTeacher) {
@@ -144,17 +148,31 @@ function showConsigneVideoIfNeeded(category, onComplete) {
     if (category.consignes && !hasShownConsigne(category.id)) {
         markConsigneShown(category.id);
         consigneCallback = onComplete;
+        const hasSupp = !!category.consignesupp;
         const container = document.getElementById('exercise-container');
-        container.innerHTML = `
-            <div class="consigne-screen">
-                <h2>Consigne de l'exercice</h2>
-                <video class="video-main" controls autoplay src="${category.consignes}"></video>
-                <div class="text-center" style="margin-top: 20px;">
-                    <button class="btn-play" style="padding: 15px 40px; font-size: 1.2rem;" onclick="dismissConsigne()">
-                        Compris !
-                    </button>
-                </div>
-            </div>`;
+
+        function renderConsigneScreen(src, index, total) {
+            container.innerHTML = `
+                <div class="consigne-screen">
+                    <h2>Consigne de l'exercice${total > 1 ? ` <span class="consigne-counter">${index}/${total}</span>` : ''}</h2>
+                    <video id="consigne-video" class="video-main" controls autoplay src="${src}"></video>
+                    <div class="text-center" style="margin-top: 20px;">
+                        <button class="btn-play btn-next-consigne" id="btn-next-consigne" style="padding: 15px 40px; font-size: 1.2rem; display: none;"
+                            onclick="${index < total ? `showNextConsigne()` : `dismissConsigne()`}">
+                            ${index < total ? 'Voir la consigne suivante ▶' : 'Compris !'}
+                        </button>
+                    </div>
+                </div>`;
+            document.getElementById('consigne-video').addEventListener('ended', () => {
+                document.getElementById('btn-next-consigne').style.display = 'inline-block';
+            });
+        }
+
+        window.showNextConsigne = function() {
+            renderConsigneScreen(category.consignesupp, 2, 2);
+        };
+
+        renderConsigneScreen(category.consignes, hasSupp ? 1 : 0, hasSupp ? 2 : 0);
     } else {
         onComplete();
     }
@@ -252,7 +270,7 @@ function showSubMenuQuiEstCe(category) {
         <div class="help-button-container">
             <button class="btn-help" onclick="openConsigneModal('${category.id}')">?</button>
         </div>
-        <div class="submenu-selection"><h2>Choisissez votre défi :</h2><div class="options-grid">`;
+        <div class="submenu-selection"><h2>Choisis ton défi :</h2><div class="options-grid">`;
     html += category.exercices.map((exo, index) => `
         <button class="btn-variant" onclick="loadExerciseById('${category.id}', '${exo.id}')">
             Exercice ${index + 1}
@@ -276,10 +294,10 @@ function loadExerciseById(catId, exoId) {
 
     if (index !== -1) {
         if (category.id === 'cat_anaphore_lsf' && index === 0) {
-            showAnaphoreRecit(category);
-        } 
+            showConsigneVideoIfNeeded(category, () => showAnaphoreRecit(category));
+        }
         else if (category.id.includes('cat_anaphore') && index === 0) {
-            showAnaphoreConsigne(category);
+            showConsigneVideoIfNeeded(category, () => loadExercise(category, 0));
         } 
         else if (category.type === 'grille_elimination') {
             currentStep = 0; 
@@ -313,6 +331,7 @@ function loadExercise(category, index) {
         totalErrors = 0;
         totalWrongSelected = 0;
         totalMissed = 0;
+        currentSessionId = crypto.randomUUID();
     }
     // Chrono réinitialisé à chaque question (timing individuel pour QCM)
     startTime = Date.now();
@@ -325,6 +344,9 @@ function loadExercise(category, index) {
     }
 
     let html = "";
+    if (category.id.includes('cat_anaphore')) {
+        html += `<div class="help-button-container"><button class="btn-help" onclick="openConsigneModal('${category.id}')">?</button></div>`;
+    }
     if (category.video_contexte) {
         html += renderAnaphoreGeneric(category, item);
     }
@@ -417,12 +439,12 @@ function showAnaphoreRecit(category) {
     container.innerHTML = `
         <div class="consigne-screen recit-screen">
             <h2>Récit complet</h2>
-            <p>Regardez attentivement l'histoire avant de passer aux consignes.</p>
+            <p>Regarde attentivement l'histoire avant de passer aux consignes.</p>
             <video class="video-main" controls autoplay src="${videoSrc}"></video>
             <div class="text-center" style="margin-top: 20px;">
-                <button class="btn-play" style="padding: 15px 40px; font-size: 1.2rem;" 
-                        onclick="showAnaphoreConsigne(currentData.categories.find(c => c.id === '${category.id}'))">
-                    Passer aux consignes
+                <button class="btn-play" style="padding: 15px 40px; font-size: 1.2rem;"
+                        onclick="loadExercise(currentData.categories.find(c => c.id === '${category.id}'), 0)">
+                    Commencer
                 </button>
             </div>
         </div>
@@ -470,6 +492,7 @@ function renderAnaphoreGeneric(category, item) {
 // Génère la grille d'animaux pour le jeu "Qui est-ce ?"
 function renderQuiEstCe(category, exo) {
     window.scrollTo(0, 0);
+    if (currentStep === 0) currentSessionId = crypto.randomUUID();
     consecutiveErrors = 0;
     isClickable = true;
     selectedAnimals = new Set();
@@ -488,7 +511,7 @@ function renderQuiEstCe(category, exo) {
                     <img src="${a.img}">
                 </div>`).join('')}
         </div>
-        <button class="btn-play btn-validate" id="btn-valider" onclick="validateStepEliminer()">Valider</button>`;
+        <button class="btn-play btn-validate" id="btn-valider" onclick="validateStepEliminer()" disabled>Valider</button>`;
 }
 
 // --- ACTIONS ET INTERACTION ---
@@ -506,6 +529,9 @@ function toggleAnimalSelection(id) {
         selectedAnimals.add(id);
         el.classList.add('animal-selected');
     }
+
+    const btn = document.getElementById('btn-valider');
+    if (btn) btn.disabled = selectedAnimals.size === 0;
 }
 
 // Valide la sélection dans le mode "éliminer"
@@ -528,12 +554,11 @@ function validateStepEliminer() {
         const el = document.getElementById(`animal-${id}`);
         if (!el) return;
         el.classList.remove('animal-selected');
-        el.classList.add(targets.has(id) ? 'blink-green' : 'blink-red');
-        el.classList.add('was-selected');
+        el.classList.add(targets.has(id) ? 'correct-fixed' : 'wrong-fixed');
     });
     missed.forEach(id => {
         const el = document.getElementById(`animal-${id}`);
-        if (el && !el.classList.contains('already-removed')) el.classList.add('blink-red');
+        if (el && !el.classList.contains('already-removed')) el.classList.add('blink-green');
     });
 
     const stepDuration = parseFloat(((Date.now() - stepStartTime) / 1000).toFixed(2));
@@ -564,12 +589,11 @@ function validateStepGarder() {
         const el = document.getElementById(`animal-${id}`);
         if (!el) return;
         el.classList.remove('animal-selected');
-        el.classList.add(targets.has(id) ? 'blink-green' : 'blink-red');
-        el.classList.add('was-selected');
+        el.classList.add(targets.has(id) ? 'correct-fixed' : 'wrong-fixed');
     });
     missed.forEach(id => {
         const el = document.getElementById(`animal-${id}`);
-        if (el && !el.classList.contains('garder-excluded')) el.classList.add('blink-red');
+        if (el && !el.classList.contains('garder-excluded')) el.classList.add('blink-green');
     });
 
     const stepDuration = parseFloat(((Date.now() - stepStartTime) / 1000).toFixed(2));
@@ -663,6 +687,7 @@ function isEliminatedGarder(id) {
 // animaux affichés en couleur, l'utilisateur sélectionne les bons
 function renderQuiEstCeGarder(category, exo) {
     window.scrollTo(0, 0);
+    if (currentStep === 0) currentSessionId = crypto.randomUUID();
     consecutiveErrors = 0;
     isClickable = true;
     selectedAnimals = new Set();
@@ -684,7 +709,7 @@ function renderQuiEstCeGarder(category, exo) {
                 </div>`;
             }).join('')}
         </div>
-        <button class="btn-play btn-validate" id="btn-valider" onclick="validateStepGarder()">Valider</button>`;
+        <button class="btn-play btn-validate" id="btn-valider" onclick="validateStepGarder()" disabled>Valider</button>`;
 }
 
 // --- UTILITAIRES VIDÉO ET MODALES ---
@@ -837,8 +862,8 @@ function showFinishModal() {
 
         msgEl.innerHTML = `
             <div class="score-display">
-                <span class="score-fraction">${totalErrors} erreur${totalErrors > 1 ? 's' : ''}</span>
                 <span class="score-appreciation">${appreciation}</span>
+                <span class="score-fraction">${totalErrors} erreur${totalErrors > 1 ? 's' : ''}</span>
             </div>`;
     } else {
         const pct = totalQuestions > 0 ? Math.round((currentScore / totalQuestions) * 100) : 0;
@@ -852,8 +877,8 @@ function showFinishModal() {
 
         msgEl.innerHTML = `
             <div class="score-display">
-                <span class="score-fraction">${currentScore} / ${totalQuestions}</span>
                 <span class="score-appreciation">${appreciation}</span>
+                <span class="score-fraction">${currentScore} / ${totalQuestions}</span>
             </div>`;
     }
 
@@ -954,9 +979,12 @@ function submitIdentification() {
     if (identMode === 'eleve') {
         const nom    = document.getElementById('input-nom').value.trim();
         const animal = document.getElementById('input-animal').value.trim();
-        if (!nom || !animal) { errorEl.classList.remove('hidden'); return; }
+        const ageVal = document.getElementById('input-age').value.trim();
+        if (!nom || !animal || !ageVal) { errorEl.classList.remove('hidden'); return; }
         userIdentifier = capitalizeFirst(nom) + '_' + capitalizeFirst(animal);
+        userAge = parseInt(ageVal);
         localStorage.setItem('userIdentifier', userIdentifier);
+        localStorage.setItem('userAge', userAge);
         document.getElementById('identification-modal').classList.add('hidden');
         updateUserDisplay();
 
@@ -982,19 +1010,56 @@ function submitIdentification() {
     }
 }
 
+let _savedUserState = null;
+
 function resetIdentification() {
+    // Sauvegarde l'état actuel pour pouvoir l'annuler via la croix
+    _savedUserState = userIdentifier
+        ? { userIdentifier, userAge, isTeacher: !!isTeacher }
+        : null;
+
     localStorage.removeItem('userIdentifier');
+    localStorage.removeItem('userAge');
     sessionStorage.removeItem('teacherMode');
     userIdentifier = '';
+    userAge = null;
     isTeacher = false;
     document.getElementById('btn-results').classList.add('hidden');
     document.getElementById('input-nom').value      = '';
     document.getElementById('input-animal').value   = '';
+    document.getElementById('input-age').value      = '';
     document.getElementById('input-classe').value   = '';
     document.getElementById('input-password').value = '';
     switchIdentMode('eleve');
     document.getElementById('settings-panel').classList.add('hidden');
+
+    // Affiche la croix seulement si un utilisateur était déjà identifié
+    const btnClose = document.getElementById('btn-close-ident');
+    if (_savedUserState) {
+        btnClose.classList.remove('hidden');
+    } else {
+        btnClose.classList.add('hidden');
+    }
+
     document.getElementById('identification-modal').classList.remove('hidden');
+    updateUserDisplay();
+}
+
+function closeIdentModal() {
+    if (!_savedUserState) return;
+    // Restaure l'état précédent sans changer d'utilisateur
+    userIdentifier = _savedUserState.userIdentifier;
+    userAge = _savedUserState.userAge;
+    isTeacher = _savedUserState.isTeacher;
+    localStorage.setItem('userIdentifier', userIdentifier);
+    if (userAge !== null) localStorage.setItem('userAge', userAge);
+    if (isTeacher) {
+        sessionStorage.setItem('teacherMode', 'true');
+        document.getElementById('btn-results').classList.remove('hidden');
+    }
+    _savedUserState = null;
+    document.getElementById('identification-modal').classList.add('hidden');
+    document.getElementById('btn-close-ident').classList.add('hidden');
     updateUserDisplay();
 }
 
@@ -1050,6 +1115,8 @@ function sendDataToSupabase(questionId, typeExercice, estCorrect, nbErreurs, dur
         },
         body: JSON.stringify({
             utilisateur:    userIdentifier,
+            age:            userAge,
+            session_id:     currentSessionId,
             exercice:       currentCategory ? currentCategory.id : questionId,
             question_id:    questionId,
             type_exercice:  typeExercice,
@@ -1125,6 +1192,8 @@ function filterUsers(query) {
     });
 }
 
+let _currentUserRows = [];
+
 async function showUserResults(user) {
     const container = document.getElementById('exercise-container');
 
@@ -1139,34 +1208,57 @@ async function showUserResults(user) {
             { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
         );
         const rows = await res.json();
+        _currentUserRows = rows;
 
         if (rows.length === 0) {
             container.innerHTML = `<div class="results-page"><h2>${user}</h2><p class="results-empty">Aucune donnée.</p></div>`;
             return;
         }
 
-        // Regroupement : date → catégorie → lignes (ordre du plus récent au plus ancien)
+        // Regroupement : date → sessions (une session = un run complet identifié par session_id)
         const byDate = {};
         const dateOrder = [];
         rows.forEach(r => {
             const d = r.date_heure
                 ? new Date(r.date_heure).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
                 : 'Date inconnue';
-            if (!byDate[d]) { byDate[d] = {}; dateOrder.push(d); }
-            if (!byDate[d][r.exercice]) byDate[d][r.exercice] = [];
-            byDate[d][r.exercice].push(r);
+            if (!byDate[d]) { byDate[d] = []; dateOrder.push(d); }
+            // Clé de session : session_id si dispo, sinon fallback exercice (anciennes données)
+            const sid = r.session_id || `__legacy__${r.exercice}`;
+            let session = byDate[d].find(s => s.sid === sid);
+            if (!session) {
+                session = { sid, catId: r.exercice, rows: [] };
+                byDate[d].push(session);
+            }
+            session.rows.push(r);
         });
 
-        let html = `<div class="results-page"><h2 class="results-title">${user}</h2>`;
+        // Numéroter les sessions multiples d'une même catégorie dans une même journée
+        for (const d of dateOrder) {
+            const countByCat = {};
+            byDate[d].forEach(s => { countByCat[s.catId] = (countByCat[s.catId] || 0) + 1; });
+            const runByCat = {};
+            byDate[d].forEach(s => {
+                runByCat[s.catId] = (runByCat[s.catId] || 0) + 1;
+                s.runLabel = countByCat[s.catId] > 1 ? ` — Tentative ${runByCat[s.catId]}` : '';
+            });
+        }
+
+        let html = `<div class="results-page">
+            <div class="results-user-header">
+                <h2 class="results-title">${user}</h2>
+                <button class="btn-export-csv" onclick="exportUserCSV('${user.replace(/'/g, "\\'")}')">⬇ Exporter CSV</button>
+            </div>`;
 
         for (const date of dateOrder) {
             html += `<div class="date-block"><div class="date-label">${date}</div>`;
 
-            for (const [catId, catRows] of Object.entries(byDate[date])) {
+            for (const session of byDate[date]) {
+                const { catId, rows: catRows, runLabel } = session;
                 const label = CATEGORY_LABELS[catId] || catId;
                 const isQCM = catRows.some(r => r.est_correct !== null);
 
-                html += `<div class="category-block"><h3 class="category-label">${label}</h3>`;
+                html += `<div class="category-block"><h3 class="category-label">${label}${runLabel}</h3>`;
 
                 if (isQCM) {
                     const correct = catRows.filter(r => r.est_correct).length;
@@ -1186,6 +1278,8 @@ async function showUserResults(user) {
                     });
                     html += `</table>`;
                 } else {
+                    const totalErr = catRows.reduce((s, r) => s + (r.nb_erreurs || 0), 0);
+                    html += `<div class="stat-summary">${totalErr} erreur${totalErr > 1 ? 's' : ''} au total sur l'exercice</div>`;
                     html += `<table class="results-table">`;
                     catRows.forEach(r => {
                         const qid = r.question_id || '';
@@ -1217,4 +1311,62 @@ async function showUserResults(user) {
     } catch(e) {
         container.innerHTML = `<div class="results-page"><h2>${user}</h2><p class="results-error">Erreur de chargement.</p></div>`;
     }
+}
+
+function exportUserCSV(user) {
+    const rows = _currentUserRows;
+    if (!rows || rows.length === 0) return;
+
+    // Calcul des stats par session
+    const sessionStats = {};
+    rows.forEach(r => {
+        const sid = r.session_id || `__legacy__${r.exercice}`;
+        if (!sessionStats[sid]) sessionStats[sid] = { rows: [], isQCM: r.est_correct !== null };
+        sessionStats[sid].rows.push(r);
+    });
+    Object.values(sessionStats).forEach(s => {
+        if (s.isQCM) {
+            const correct = s.rows.filter(r => r.est_correct).length;
+            const total   = s.rows.length;
+            s.score  = `${correct}/${total}`;
+            s.pct    = `${Math.round((correct / total) * 100)}%`;
+        } else {
+            const totalErr = s.rows.reduce((acc, r) => acc + (r.nb_erreurs || 0), 0);
+            s.score  = `${totalErr} erreur${totalErr > 1 ? 's' : ''}`;
+            s.pct    = '—';
+        }
+    });
+
+    const cols = ['date_heure', 'utilisateur', 'age', 'session_id', 'session_score', 'session_pct',
+                  'exercice', 'question_id', 'type_exercice',
+                  'est_correct', 'nb_erreurs', 'nb_mauvaises_selections', 'nb_oublis', 'duree_secondes'];
+
+    const escape = v => {
+        if (v == null) return '';
+        const s = String(v);
+        return s.includes(',') || s.includes('"') || s.includes('\n')
+            ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    const lines = [
+        cols.join(','),
+        ...rows.map(r => {
+            const sid   = r.session_id || `__legacy__${r.exercice}`;
+            const stats = sessionStats[sid];
+            return cols.map(c => {
+                if (c === 'session_score') return escape(stats.score);
+                if (c === 'session_pct')   return escape(stats.pct);
+                if (c === 'exercice')      return escape(CATEGORY_LABELS[r[c]] || r[c]);
+                return escape(r[c]);
+            }).join(',');
+        })
+    ];
+
+    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `resultats_${user}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
