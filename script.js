@@ -417,7 +417,9 @@ function loadExercise(category, index) {
         html += renderAnaphoreGeneric(category, item);
     }
 
-    html += `<h2>${item.titre || category.nom}</h2>`;
+    if (item.titre) {
+        html += `<h2>${item.titre}</h2>`;
+    }
     html += `<div class="consigne-container">`;
     
     if (category.id === "cat_anaphore_fr") {
