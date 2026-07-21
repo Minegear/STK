@@ -126,6 +126,10 @@ header {
 }
 
 .btn-variant {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     background-color: var(--white);
     color: var(--primary-blue);
     border: 2px solid var(--accent-blue);
@@ -138,6 +142,21 @@ header {
     width: 100%;
     max-width: 400px;
     min-width: 250px;
+}
+
+/* Logo affiché sur les boutons de menu (piliers et sous-menus) */
+.btn-logo {
+    height: 72px;
+    width: 72px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.card .btn-logo {
+    display: block;
+    height: 100px;
+    width: 100px;
+    margin: 0 auto 12px;
 }
 
 .btn-variant:hover {
@@ -158,6 +177,21 @@ header {
 }
 
 .btn-play:hover { background-color: var(--primary-blue); }
+
+.btn-play:disabled,
+.btn-variant:disabled {
+    background-color: #e2e8f0;
+    color: #94a3b8;
+    border-color: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+}
+.btn-play:disabled:hover,
+.btn-variant:disabled:hover {
+    background-color: #e2e8f0;
+    color: #94a3b8;
+    transform: none;
+}
 
 /* Bouton Spécifique de Validation (QCM) */
 .btn-validate {
@@ -490,6 +524,664 @@ header {
 .text-choice { font-size: 1.1rem; font-weight: 500; color: var(--primary-blue); margin: 0; }
 
 /* ==========================================================================
+   5bis. LANGUE ÉCRITE — ÉTIQUETTES À GLISSER-DÉPOSER
+   ========================================================================== */
+
+/* Ligne : phrase concernée à gauche, zone de dépôt à droite */
+.te-phrase-row {
+    display: flex;
+    align-items: stretch;
+    gap: 20px;
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.te-phrase-box {
+    flex: 1;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.te-phrase-box p {
+    margin: 0;
+    font-size: 1.15rem;
+    line-height: 1.7;
+    text-align: left;
+}
+
+/* Zone de dépôt : "ombre" pleine (sans encadré), découpée dans la même forme que les étiquettes.
+   Sa taille (width/height) est fixée dynamiquement en JS pour coller à celle des étiquettes. */
+.te-dropzone {
+    flex: 0 0 auto;
+    min-width: 120px;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%);
+    background: rgba(17, 24, 39, 0.16);
+    transition: background 0.2s, transform 0.15s;
+}
+
+.te-dropzone.drag-over {
+    background: rgba(17, 24, 39, 0.3);
+    transform: scale(1.03);
+}
+
+/* Banque d'étiquettes disponibles */
+.te-bank {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    max-width: 800px;
+    margin: 25px auto;
+    min-height: 60px;
+}
+
+/* Étiquette : rectangle noir stylisé, pointe triangulaire à gauche, filets bleu/rouge à droite */
+.etiquette {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    background: #111827;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 14px 34px 14px 26px;
+    clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%);
+    cursor: grab;
+    user-select: none;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease;
+}
+
+.etiquette:hover { transform: translateY(-2px); }
+.etiquette:active { cursor: grabbing; }
+
+/* Filets décoratifs bleu et rouge côté droit */
+.etiquette::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    right: 18px;
+    width: 3px;
+    background: var(--accent-blue);
+    box-shadow: 9px 0 0 var(--error);
+}
+
+.etiquette-label {
+    pointer-events: none;
+}
+
+.etiquette.etiquette-correct   { outline: 4px solid var(--success); outline-offset: 3px; cursor: default; }
+.etiquette.etiquette-incorrect { outline: 4px solid var(--error);   outline-offset: 3px; cursor: default; }
+
+@media (max-width: 600px) {
+    .te-phrase-row { flex-direction: column; }
+    .te-dropzone { align-self: center; }
+}
+
+body.theme-sombre .te-dropzone   { background: rgba(96,165,250,0.22); }
+body.theme-sombre .te-dropzone.drag-over { background: rgba(96,165,250,0.4); }
+body.theme-ludique .te-dropzone  { background: rgba(249,115,22,0.18); }
+body.theme-ludique .te-dropzone.drag-over { background: rgba(249,115,22,0.35); }
+
+/* En mode sombre, le fond de page (#0f172a) est presque identique au noir de l'étiquette (#111827) :
+   on l'éclaircit nettement pour qu'elle reste bien visible. */
+body.theme-sombre .etiquette {
+    background: #475569;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+/* Démo animée : étiquette "Exemple" -> trait -> ombre, avec un curseur qui parcourt le trait en boucle */
+.etiquette-demo {
+    max-width: 460px;
+    margin: 20px auto 0;
+    text-align: center;
+}
+
+.etiquette-demo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.etiquette-demo-tag {
+    cursor: default;
+    flex-shrink: 0;
+}
+.etiquette-demo-tag:hover { transform: none; }
+
+.etiquette-demo-shadow {
+    width: 120px;
+    height: 58px;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.etiquette-demo-line-wrap {
+    position: relative;
+    flex: 0 0 90px;
+    width: 90px;
+    height: 26px;
+    margin: 0 12px;
+}
+
+.etiquette-demo-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    transform: translateY(-50%);
+    background-image: repeating-linear-gradient(to right, var(--accent-blue) 0 6px, transparent 6px 12px);
+    animation: etiquette-demo-line-fade 4s linear infinite;
+}
+
+.etiquette-demo-cursor {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 26px;
+    height: 26px;
+    transform: translate(-50%, -50%);
+    animation: etiquette-demo-cursor-move 4s linear infinite;
+}
+
+@keyframes etiquette-demo-line-fade {
+    0%, 50%   { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+}
+
+@keyframes etiquette-demo-cursor-move {
+    0%      { left: 0%;   opacity: 1; }
+    48%     { left: 100%; opacity: 1; }
+    50%     { left: 100%; opacity: 0; }
+    50.01%  { left: 0%;   opacity: 0; }
+    100%    { left: 0%;   opacity: 0; }
+}
+
+.etiquette-demo-caption {
+    margin: 14px 0 0;
+    font-size: 1rem;
+    color: var(--primary-blue);
+}
+
+body.theme-sombre .etiquette-demo-caption { color: #93c5fd; }
+
+/* Texte support des trous : la phrase s'écoule normalement, les menus déroulants s'y insèrent en ligne */
+.te-trous-card { text-align: left; }
+
+.te-trous-text {
+    font-size: 1.2rem;
+    line-height: 2.8;
+}
+
+/* Variante "liste" : toutes les phrases (mots simples) affichées en même temps, une par ligne */
+.te-trous-liste {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.te-trous-item {
+    padding: 14px 4px;
+    font-size: 1.2rem;
+    line-height: 2.4;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.te-trous-item:last-child { border-bottom: none; }
+
+body.theme-sombre .te-trous-item { border-bottom-color: rgba(255,255,255,0.1); }
+
+/* ==========================================================================
+   5ter. LANGUE ÉCRITE — ÉTIQUETTES À USAGE UNIQUE (recettes) : liste + vidéo à droite
+   ========================================================================== */
+
+.te-liste-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+    max-width: 1000px;
+    margin: 20px auto;
+}
+
+.te-liste-main { flex: 1 1 auto; min-width: 0; }
+
+.te-liste-video {
+    flex: 0 0 320px;
+    max-width: 320px;
+}
+.te-liste-video .video-main { max-width: 100%; margin: 0; }
+
+.te-liste-intro {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin: 0 0 14px;
+}
+
+.te-liste-items {
+    list-style: none;
+    margin: 0 0 25px;
+    padding: 0;
+}
+
+.te-liste-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+}
+
+.te-liste-mot {
+    font-size: 1.2rem;
+    color: var(--primary-blue);
+}
+
+/* Étiquette sélectionnée au clic (en attente d'un clic sur une ombre pour être posée) */
+.etiquette.etiquette-selected {
+    outline: 3px solid var(--accent-blue);
+    outline-offset: 3px;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 760px) {
+    .te-liste-layout { flex-direction: column; }
+    .te-liste-video { flex-basis: auto; max-width: 100%; align-self: center; }
+}
+
+body.theme-sombre .te-liste-intro { color: #93c5fd; }
+body.theme-sombre .te-liste-mot   { color: #e2e8f0; }
+
+/* ==========================================================================
+   5quater. LANGUE ÉCRITE — TABLEAU DE TRI (glisser les étiquettes dans les colonnes)
+   ========================================================================== */
+
+.tri-tableau {
+    display: grid;
+    /* S'adapte au nombre de colonnes : elles restent côte à côte tant qu'il y a la place
+       (4-5 colonnes sur un écran normal), et passent à la ligne au-delà (ex: 11 colonnes). */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    max-width: 1100px;
+    margin: 20px auto;
+}
+
+.tri-colonne {
+    min-width: 0;
+    min-height: 160px;
+    background: rgba(59, 130, 246, 0.06);
+    border: 3px dashed var(--accent-blue);
+    border-radius: 14px;
+    padding: 10px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.tri-colonne.drag-over {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: var(--primary-blue);
+}
+
+.tri-colonne-header {
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--accent-blue);
+}
+
+.tri-colonne-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 8px;
+    min-height: 40px;
+}
+
+/* Une fois posée dans une colonne (souvent étroite), l'étiquette ne doit plus déborder :
+   elle peut rétrécir et le texte passe à la ligne plutôt que de dépasser la case. */
+.tri-colonne-body .etiquette,
+.tri-colonne-body .image-carte {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.tri-colonne-body .etiquette {
+    padding: 10px 20px 10px 16px;
+    font-size: 0.95rem;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.tri-colonne-body .image-carte {
+    width: 84px;
+}
+
+@media (max-width: 700px) {
+    .tri-tableau { grid-template-columns: 1fr; }
+}
+@media (min-width: 701px) and (max-width: 900px) {
+    .tri-tableau { grid-template-columns: repeat(2, 1fr); }
+}
+
+body.theme-sombre .tri-colonne         { background: rgba(96,165,250,0.1); border-color: #60a5fa; }
+body.theme-sombre .tri-colonne.drag-over { background: rgba(96,165,250,0.25); border-color: #93c5fd; }
+body.theme-sombre .tri-colonne-header  { color: #93c5fd; border-bottom-color: #60a5fa; }
+
+body.theme-ludique .tri-colonne        { border-color: #f97316; background: rgba(249,115,22,0.08); }
+body.theme-ludique .tri-colonne.drag-over { background: rgba(249,115,22,0.2); }
+body.theme-ludique .tri-colonne-header { color: #f97316; border-bottom-color: #f97316; }
+
+/* Carte-image façon "timbre" : cadre blanc, ombre, liseré ondulé (pointillé) tout autour de l'image */
+.image-carte {
+    position: relative;
+    width: 108px;
+    background: #fff;
+    padding: 9px;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.22);
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.15s ease;
+}
+
+.image-carte:hover { transform: translateY(-2px) rotate(-1deg); }
+.image-carte:active { cursor: grabbing; }
+
+.image-carte::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 2px dashed var(--accent-blue);
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+.image-carte img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.image-carte.etiquette-selected { outline: 3px solid var(--accent-blue); outline-offset: 3px; transform: translateY(-2px); }
+.image-carte.etiquette-correct   { outline: 4px solid var(--success); outline-offset: 3px; cursor: default; }
+.image-carte.etiquette-incorrect { outline: 4px solid var(--error);   outline-offset: 3px; cursor: default; }
+.image-carte.etiquette-correct::before   { border-color: var(--success); }
+.image-carte.etiquette-incorrect::before { border-color: var(--error); }
+
+body.theme-sombre .image-carte { background: #1e293b; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+body.theme-sombre .image-carte::before { border-color: #60a5fa; }
+
+body.theme-ludique .image-carte::before { border-color: #f97316; }
+
+/* ==========================================================================
+   5quinquies. LANGUE ÉCRITE — RÉPONSE LIBRE (ex. négation)
+   ========================================================================== */
+
+.neg-exemple-card {
+    max-width: 700px;
+    margin: 15px auto;
+    padding: 14px 20px;
+    background: rgba(59, 130, 246, 0.08);
+    border: 2px dashed var(--accent-blue);
+    border-radius: 12px;
+}
+
+.neg-exemple-label {
+    margin: 0 0 6px;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+}
+
+.neg-exemple-text {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--primary-blue);
+}
+
+.neg-reponse-zone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 700px;
+    margin: 20px auto;
+    flex-wrap: wrap;
+}
+
+.neg-non {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--primary-blue);
+}
+
+.neg-input {
+    flex: 1;
+    min-width: 220px;
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    color: var(--primary-blue);
+    background: #fff;
+    border: 3px solid var(--accent-blue);
+    border-radius: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.neg-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+/* MESURE TEMPORAIRE (test de la notation) : couleurs révélant si la réponse était bonne,
+   partielle ou fausse, + badges par critère. À simplifier en neutre une fois le test terminé. */
+.neg-input.neg-input-correct   { border-color: var(--success); background: #dcfce7; }
+.neg-input.neg-input-partial   { border-color: #eab308; background: #fef9c3; }
+.neg-input.neg-input-incorrect { border-color: var(--error); background: #fee2e2; }
+.neg-input:disabled { opacity: 0.95; }
+
+.neg-feedback {
+    max-width: 700px;
+    margin: 0 auto 10px;
+    font-size: 1.05rem;
+    text-align: center;
+    line-height: 1.8;
+}
+
+.neg-feedback-ok      { color: var(--success); }
+.neg-feedback-partial { color: #b45309; }
+
+.neg-critere {
+    display: inline-block;
+    margin: 2px 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+.neg-critere.ok { background: #dcfce7; color: #15803d; }
+.neg-critere.ko { background: #fee2e2; color: #b91c1c; }
+
+body.theme-sombre .neg-exemple-card { background: rgba(96,165,250,0.12); border-color: #60a5fa; }
+body.theme-sombre .neg-exemple-label,
+body.theme-sombre .neg-exemple-text,
+body.theme-sombre .neg-non { color: #93c5fd; }
+body.theme-sombre .neg-input { background: #1e293b; color: #e2e8f0; border-color: #60a5fa; }
+body.theme-sombre .neg-input.neg-input-correct   { background: #14532d; border-color: #22c55e; }
+body.theme-sombre .neg-input.neg-input-partial   { background: #422006; border-color: #eab308; }
+body.theme-sombre .neg-input.neg-input-incorrect { background: #450a0a; border-color: #ef4444; }
+body.theme-sombre .neg-feedback-partial { color: #fbbf24; }
+body.theme-sombre .neg-critere.ok { background: #14532d; color: #86efac; }
+body.theme-sombre .neg-critere.ko { background: #450a0a; color: #fca5a5; }
+
+body.theme-ludique .neg-exemple-card { border-radius: 20px; border-color: #f97316; }
+body.theme-ludique .neg-input { border-radius: 18px; border-color: #f97316; }
+body.theme-ludique .neg-input:focus { box-shadow: 0 0 0 3px rgba(249,115,22,0.25); }
+
+/* Menu déroulant stylisé pour choisir un article dans banque_options */
+.trou-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    display: inline-block;
+    min-width: 64px;
+    margin: 0 4px;
+    padding: 7px 34px 7px 14px;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    background-color: #eaf1ff;
+    border: 2px solid var(--accent-blue);
+    border-radius: 10px;
+    cursor: pointer;
+    vertical-align: middle;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%233b82f6' d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.trou-select:hover  { transform: translateY(-1px); }
+.trou-select:focus  { outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
+.trou-select:disabled { cursor: default; opacity: 0.95; transform: none; }
+
+.trou-select.trou-correct {
+    border-color: var(--success);
+    background-color: #dcfce7;
+    color: #15803d;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%2315803d' d='M7 10l5 5 5-5z'/></svg>");
+}
+
+.trou-select.trou-incorrect {
+    border-color: var(--error);
+    background-color: #fee2e2;
+    color: #b91c1c;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23b91c1c' d='M7 10l5 5 5-5z'/></svg>");
+}
+
+body.theme-sombre .trou-select {
+    background-color: #1e293b;
+    border-color: #60a5fa;
+    color: #93c5fd;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%2360a5fa' d='M7 10l5 5 5-5z'/></svg>");
+}
+body.theme-sombre .trou-select:focus { box-shadow: 0 0 0 3px rgba(96,165,250,0.3); }
+body.theme-sombre .trou-select.trou-correct {
+    background-color: #14532d; color: #86efac; border-color: #22c55e;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%2386efac' d='M7 10l5 5 5-5z'/></svg>");
+}
+body.theme-sombre .trou-select.trou-incorrect {
+    background-color: #450a0a; color: #fca5a5; border-color: #ef4444;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23fca5a5' d='M7 10l5 5 5-5z'/></svg>");
+}
+
+body.theme-ludique .trou-select {
+    border-radius: 16px;
+    border-color: #f97316;
+    background-color: #fff3e0;
+    color: #1a1a2e;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23f97316' d='M7 10l5 5 5-5z'/></svg>");
+}
+body.theme-ludique .trou-select:focus { box-shadow: 0 0 0 3px rgba(249,115,22,0.25); }
+
+/* Champ de saisie libre pour les trous (ex. conjugaison) : le verbe à l'infinitif apparaît en
+   placeholder estompé et disparaît automatiquement dès qu'on tape (comportement natif du navigateur) */
+.conj-input {
+    display: inline-block;
+    width: 195px;
+    margin: 0 4px;
+    padding: 7px 12px;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--primary-blue);
+    background-color: #eaf1ff;
+    border: 2px solid var(--accent-blue);
+    border-radius: 10px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.conj-input::placeholder {
+    color: var(--accent-blue);
+    opacity: 0.5;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.conj-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.conj-input.conj-correct   { border-color: var(--success); background: #dcfce7; }
+.conj-input.conj-incorrect { border-color: var(--error); background: #fee2e2; }
+.conj-input:disabled { opacity: 0.95; }
+
+body.theme-sombre .conj-input {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    border-color: #60a5fa;
+}
+body.theme-sombre .conj-input::placeholder { color: #60a5fa; opacity: 0.6; }
+body.theme-sombre .conj-input:focus { box-shadow: 0 0 0 3px rgba(96,165,250,0.3); }
+body.theme-sombre .conj-input.conj-correct   { background: #14532d; border-color: #22c55e; }
+body.theme-sombre .conj-input.conj-incorrect { background: #450a0a; border-color: #ef4444; }
+
+body.theme-ludique .conj-input { border-radius: 16px; border-color: #f97316; }
+body.theme-ludique .conj-input::placeholder { color: #f97316; }
+body.theme-ludique .conj-input:focus { box-shadow: 0 0 0 3px rgba(249,115,22,0.25); }
+
+/* Réécriture de phrase entière : la phrase d'origine (avec le mot ciblé en gras) au-dessus
+   d'un champ de saisie pleine largeur pour retaper toute la phrase transformée */
+.reecriture-item {
+    display: block;
+    padding: 14px 4px;
+}
+
+.reecriture-original {
+    margin: 0 0 8px;
+    font-size: 1.15rem;
+    color: var(--primary-blue);
+}
+
+.reecriture-original strong {
+    color: var(--accent-blue);
+    background-color: rgba(59, 130, 246, 0.12);
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+.reecriture-input {
+    width: 100%;
+    max-width: 100%;
+    text-align: left;
+}
+
+body.theme-sombre .reecriture-original { color: #e2e8f0; }
+body.theme-sombre .reecriture-original strong { color: #93c5fd; background-color: rgba(96,165,250,0.18); }
+
+/* ==========================================================================
    6. MODALES ET EFFETS SPÉCIAUX
    ========================================================================== */
 
@@ -552,7 +1244,7 @@ header {
 .mini-context-container {
     position: fixed;
     top: 80px;
-    right: 20px;
+    left: 20px;
     width: 120px;
     background: var(--white);
     border: 3px solid var(--accent-blue);
@@ -873,7 +1565,7 @@ header {
     .grid-elimination { grid-template-columns: repeat(4, 1fr); }
     .video-main { max-height: 300px; }
     .video-zoom { transform: translate(-50%, -50%) scale(1.1); }
-    .mini-context-container { width: 90px; top: 70px; right: 10px; }
+    .mini-context-container { width: 90px; top: 70px; left: 10px; }
 }
 
 /* ==========================================================================
