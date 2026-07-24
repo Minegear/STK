@@ -21,18 +21,24 @@
     <div id="settings-panel" class="settings-panel hidden">
         <h3 class="settings-title">Apparence</h3>
         <div class="theme-options">
-            <button class="theme-card theme-clair-preview" onclick="setTheme('clair')">
+            <button class="theme-card theme-clair-preview" onclick="setTheme('clair')" aria-label="Mode clair" title="Mode clair">
                 <span class="theme-swatch swatch-clair"></span>
-                <span class="theme-label">Mode clair</span>
             </button>
-            <button class="theme-card theme-sombre-preview" onclick="setTheme('sombre')">
+            <button class="theme-card theme-sombre-preview" onclick="setTheme('sombre')" aria-label="Mode sombre" title="Mode sombre">
                 <span class="theme-swatch swatch-sombre"></span>
-                <span class="theme-label">Mode sombre</span>
             </button>
-            <button class="theme-card theme-ludique-preview" onclick="setTheme('ludique')">
+            <button class="theme-card theme-ludique-preview" onclick="setTheme('ludique')" aria-label="Mode coloré" title="Mode coloré">
                 <span class="theme-swatch swatch-ludique"></span>
-                <span class="theme-label">Mode coloré</span>
             </button>
+        </div>
+        <hr class="settings-separator">
+        <h3 class="settings-title">Taille du texte</h3>
+        <div class="text-size-control">
+            <span class="text-size-label" aria-hidden="true">A</span>
+            <input type="range" id="text-size-slider" class="text-size-slider"
+                   min="90" max="150" step="10" value="100"
+                   oninput="setTextSize(this.value)" aria-label="Taille du texte">
+            <span class="text-size-label text-size-label-big" aria-hidden="true">A</span>
         </div>
         <hr class="settings-separator">
         <h3 class="settings-title">Utilisateur</h3>

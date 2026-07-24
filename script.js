@@ -10,14 +10,14 @@
     }).observe(document.body, { childList: true, subtree: true });
 })();
 
-// Logos affichés sur les boutons des menus (piliers et sous-menus), indexés par l'id
-// passé à startCategory() pour ce bouton (id de groupe ou, à défaut, id de catégorie directe)
+// Logo à afficher sur chaque bouton de menu, indexé par id de groupe ou de catégorie
 const MENU_LOGOS = {
     'langue_ecrite_group': 'assets/logos/LE.png',
     'lsf_group':           'assets/logos/LSF.png',
     'ponts_group':         'assets/logos/ponts.png',
     'vrai_faux_group':     'assets/logos/pro_des_formes3.png',
     'qui_est_ce_group':    'assets/logos/poil_aux_pattes.png',
+    'pap_test_group':      'assets/logos/poil_aux_pattes.png',
     'para_group':          'assets/logos/assosigne.png',
     'recit_group':         'assets/logos/signe.png',
     'temps_group':         'assets/logos/temps.png',
@@ -29,6 +29,53 @@ function menuLogoHtml(id) {
     const src = MENU_LOGOS[id];
     return src ? `<img class="btn-logo" src="${src}" alt="">` : '';
 }
+
+// Affichage de la page d'accueil : 'classic' = grille de cartes, 'showcase' = colonnes plein écran
+const HOME_MENU_STYLE = 'showcase';
+
+// Pilier parent de chaque sous-groupe, pour le 2e niveau du fil d'Ariane
+const GROUP_PARENT_PILLAR = {
+    'vrai_faux_group':  { id: 'lsf_group', nom: 'LSF' },
+    'qui_est_ce_group': { id: 'lsf_group', nom: 'LSF' },
+    'pap_test_group':   { id: 'lsf_group', nom: 'LSF' },
+    'para_group':       { id: 'lsf_group', nom: 'LSF' },
+    'recit_group':      { id: 'lsf_group', nom: 'LSF' },
+    'temps_group':      { id: 'lsf_group', nom: 'LSF' },
+    'anaphore_group':   { id: 'ponts_group', nom: 'Ponts' },
+    'cat_pronoms':      { id: 'ponts_group', nom: 'Ponts' },
+};
+
+// Sous-menus "Langue Écrite" regroupant plusieurs défis, pour le 3e niveau du fil d'Ariane
+const LANGUE_ECRITE_SUBMENUS = [
+    { label: 'Articles', fn: 'showSubMenuLangueEcriteArticles', ids: [
+        'cat_le_d6_articles', 'cat_le_d14_articles_sport', 'cat_le_d8_articles_simples_def',
+        'cat_le_d10_articles_simples_indef', 'cat_le_d17_omelette', 'cat_le_d19_sandwich',
+        'cat_le_d12_articles_tableau', 'cat_le_d21_articles_images'
+    ] },
+    { label: 'Négation', fn: 'showSubMenuLangueEcriteNegation', ids: [
+        'cat_le_d26_negation_pas', 'cat_le_d28_negation_plus_jamais',
+        'cat_le_d30_negation_personne_rien', 'cat_le_d32_negation_mixte'
+    ] },
+    { label: 'Préposition', fn: 'showSubMenuLangueEcritePrepositions', ids: [
+        'cat_le_d35_prepositions', 'cat_le_d35_prepositions_2'
+    ] },
+    { label: 'Fonctions', fn: 'showSubMenuLangueEcriteFonctions', ids: [
+        'cat_le_d42_fonctions', 'cat_le_d43_fonctions', 'cat_le_d44_fonctions'
+    ] },
+    { label: 'Emploi des temps', fn: 'showSubMenuLangueEcriteTemps', ids: [
+        'cat_le_d49_temps', 'cat_le_d49_temps_2', 'cat_le_d53_conjugaison_present',
+        'cat_le_d55_conjugaison_passe_compose', 'cat_le_d57_conjugaison_futur_proche',
+        'cat_le_d59_conjugaison_futur', 'cat_le_d61_conjugaison_contexte'
+    ] },
+    { label: 'Accords en genre et en nombre', fn: 'showSubMenuLangueEcriteAccords', ids: [
+        'cat_le_d64_accords_adjectifs', 'cat_le_d66_accords_genre', 'cat_le_d68_accords_pluriel',
+        'cat_le_d70_pluriel_mots', 'cat_le_d72_choix_mots'
+    ] },
+];
+const LANGUE_ECRITE_SUBMENU_BY_CAT = {};
+LANGUE_ECRITE_SUBMENUS.forEach(group => {
+    group.ids.forEach(id => { LANGUE_ECRITE_SUBMENU_BY_CAT[id] = group; });
+});
 
 let currentData = null;
 let currentExo = null;
@@ -46,6 +93,7 @@ let totalMissed = 0;
 let selectedAnimals = new Set();
 let stepStartTime = null;
 let stepErrors = 0;
+let papTestMode = false; // présentation animée de Poil aux pattes
 let userIdentifier = '';
 let userAge = null;
 let identMode = 'eleve';
@@ -54,8 +102,6 @@ let currentSessionId = null;
 
 // -----------------------------------------------------------------------
 // CONFIGURATION SUPABASE
-// Remplissez ces deux valeurs depuis :
-//   Dashboard Supabase > Project Settings > API
 // -----------------------------------------------------------------------
 const SUPABASE_URL = 'https://iohgfwhwsyddqeeycgxw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvaGdmd2h3c3lkZHFlZXljZ3h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMDMyMTUsImV4cCI6MjA5NTU3OTIxNX0.uLoW4w6n5ICnKokimkJM7K25nnooA5OeW0Eo3C3jdBw';      // clé "anon / public"
@@ -76,7 +122,6 @@ fetch('exercices.json')
             userIdentifier = savedId;
             const savedAge = localStorage.getItem('userAge');
             if (savedAge !== null) userAge = parseInt(savedAge);
-            updateUserDisplay();
         }
         if (savedTeacher) {
             isTeacher = true;
@@ -84,6 +129,7 @@ fetch('exercices.json')
         }
         if (savedId || savedTeacher) {
             document.getElementById('identification-modal').classList.add('hidden');
+            updateUserDisplay();
         }
     });
 
@@ -111,14 +157,24 @@ function updateBreadcrumb(category = null, exo = null) {
             targetId = 'anaphore_group';
             displayName = 'À la recherche de sens';
         } else if (category.id.includes('qui_est_ce')) {
-            targetId = 'qui_est_ce_group';
-            displayName = 'Poil aux pattes';
+            targetId = papTestMode ? 'pap_test_group' : 'qui_est_ce_group';
+            displayName = papTestMode ? 'PAP_TEST' : 'Poil aux pattes';
         } else if (category.id.startsWith('cat_le_')) {
             targetId = 'langue_ecrite_group';
             displayName = 'Langue Écrite';
         }
 
+        const parentPillar = GROUP_PARENT_PILLAR[targetId];
+        if (parentPillar) {
+            html += ` > <a href="#" onclick="startCategory('${parentPillar.id}')">${parentPillar.nom}</a>`;
+        }
+
         html += ` > <a href="#" onclick="startCategory('${targetId}')">${displayName}</a>`;
+
+        const subGroup = LANGUE_ECRITE_SUBMENU_BY_CAT[category.id];
+        if (subGroup) {
+            html += ` > <a href="#" onclick="${subGroup.fn}()">${subGroup.label}</a>`;
+        }
     }
 
     if (exo) {
@@ -137,8 +193,17 @@ function updateBreadcrumb(category = null, exo = null) {
     nav.innerHTML = html;
 }
 
+// Affiche "Accueil > Langue Écrite > {label}" pour les sous-menus qui ne passent pas par startCategory()
+function updateBreadcrumbLangueEcriteGroup(label) {
+    document.getElementById('nav-breadcrumb').innerHTML =
+        `<a href="#" onclick="showMenu()">Accueil</a> > ` +
+        `<a href="#" onclick="startCategory('langue_ecrite_group')">Langue Écrite</a> > ${label}`;
+}
+
 // Affiche l'écran d'accueil avec les trois grands piliers
 function showMenu() {
+    papTestMode = false;
+    stopPapTestMovement();
     const allVideos = document.querySelectorAll('video');
     allVideos.forEach(v => {
         v.pause();
@@ -159,7 +224,15 @@ function showMenu() {
         { id: 'ponts_group', nom: 'Ponts', desc: 'Fais le lien entre le français et la LSF.' }
     ];
 
-    menu.innerHTML = mainPillars.map(pillar => `
+    menu.classList.toggle('menu-showcase', HOME_MENU_STYLE === 'showcase');
+    menu.innerHTML = HOME_MENU_STYLE === 'showcase'
+        ? renderHomeMenuShowcase(mainPillars)
+        : renderHomeMenuClassic(mainPillars);
+}
+
+// Affichage "classic" (inchangé) : grille de cartes avec bouton "Faire le défi"
+function renderHomeMenuClassic(mainPillars) {
+    return mainPillars.map(pillar => `
         <div class="card">
             ${menuLogoHtml(pillar.id)}
             <h3>${pillar.nom}</h3>
@@ -168,11 +241,62 @@ function showMenu() {
     `).join('');
 }
 
+// Affichage "showcase" : 3 rangées plein écran cliquables, avec effet de survol (tilt 3D + formes en fond)
+const HOME_SHOWCASE_COLORS = {
+    'langue_ecrite_group': '#3b82f6',
+    'lsf_group':           '#7c3aed',
+    'ponts_group':         '#f97316',
+};
+
+function renderHomeMenuShowcase(mainPillars) {
+    return mainPillars.map(pillar => {
+        const color = HOME_SHOWCASE_COLORS[pillar.id] || '#3b82f6';
+
+        return `
+            <button class="home-showcase-card" style="--pillar-color:${color}" onclick="startCategory('${pillar.id}')"
+                    onmousemove="handleShowcaseTilt(event, this)" onmouseleave="resetShowcaseTilt(this)">
+                <div class="home-showcase-shapes"></div>
+                <div class="home-showcase-main">
+                    ${menuLogoHtml(pillar.id)}
+                    <div class="home-showcase-text">
+                        <h3>${pillar.nom}</h3>
+                        <p>${pillar.desc}</p>
+                    </div>
+                </div>
+                <div class="home-showcase-arrow-panel">
+                    <span class="home-showcase-arrow">→</span>
+                </div>
+            </button>`;
+    }).join('');
+}
+
+// Tilt 3D + origine des formes en fond : suivent la position du curseur dans la carte
+function handleShowcaseTilt(e, card) {
+    const rect = card.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+
+    const rotateY = (px - 0.5) * 14;
+    const rotateX = (0.5 - py) * 10;
+
+    card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+    card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+    card.style.transform =
+        `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.015)`;
+}
+
+function resetShowcaseTilt(card) {
+    card.style.transform = '';
+    card.style.removeProperty('--mx');
+    card.style.removeProperty('--my');
+}
+
 // Affiche les sous-catégories du pilier "LSF"
 function showSubMenuLSF() {
     const items = [
         { id: 'vrai_faux_group', nom: 'Pro des formes' },
         { id: 'qui_est_ce_group', nom: 'Poil aux pattes' },
+        { id: 'pap_test_group', nom: 'PAP_TEST' },
         { id: 'para_group', nom: 'Assosigne' },
         { id: 'recit_group', nom: 'Il était un signe' },
         { id: 'temps_group', nom: 'Voyage dans le temps' }
@@ -205,6 +329,7 @@ function showSubMenuLangueEcrite() {
 
 // Affiche les défis regroupés sous "Accords en genre et en nombre"
 function showSubMenuLangueEcriteAccords() {
+    updateBreadcrumbLangueEcriteGroup('Accords en genre et en nombre');
     document.getElementById('exercise-container').innerHTML = `
         <div class="submenu-selection">
             <h2>Accords en genre et en nombre — Choisis ton défi :</h2>
@@ -220,6 +345,7 @@ function showSubMenuLangueEcriteAccords() {
 
 // Affiche les défis regroupés sous "Emploi des temps"
 function showSubMenuLangueEcriteTemps() {
+    updateBreadcrumbLangueEcriteGroup('Emploi des temps');
     document.getElementById('exercise-container').innerHTML = `
         <div class="submenu-selection">
             <h2>Emploi des temps — Choisis ton défi :</h2>
@@ -237,6 +363,7 @@ function showSubMenuLangueEcriteTemps() {
 
 // Affiche les défis regroupés sous "Fonctions"
 function showSubMenuLangueEcriteFonctions() {
+    updateBreadcrumbLangueEcriteGroup('Fonctions');
     document.getElementById('exercise-container').innerHTML = `
         <div class="submenu-selection">
             <h2>Fonctions — Choisis ton défi :</h2>
@@ -250,6 +377,7 @@ function showSubMenuLangueEcriteFonctions() {
 
 // Affiche les défis regroupés sous "Préposition"
 function showSubMenuLangueEcritePrepositions() {
+    updateBreadcrumbLangueEcriteGroup('Préposition');
     document.getElementById('exercise-container').innerHTML = `
         <div class="submenu-selection">
             <h2>Préposition — Choisis ton défi :</h2>
@@ -262,6 +390,7 @@ function showSubMenuLangueEcritePrepositions() {
 
 // Affiche les défis regroupés sous "Négation"
 function showSubMenuLangueEcriteNegation() {
+    updateBreadcrumbLangueEcriteGroup('Négation');
     document.getElementById('exercise-container').innerHTML = `
         <div class="submenu-selection">
             <h2>Négation — Choisis ton défi :</h2>
@@ -276,6 +405,7 @@ function showSubMenuLangueEcriteNegation() {
 
 // Affiche les deux défis regroupés sous "Articles"
 function showSubMenuLangueEcriteArticles() {
+    updateBreadcrumbLangueEcriteGroup('Articles');
     document.getElementById('exercise-container').innerHTML = `
         <div class="submenu-selection">
             <h2>Articles — Choisis ton défi :</h2>
@@ -385,39 +515,53 @@ function startCategory(catId) {
     currentStep = 0; 
 
     if (catId === 'langue_ecrite_group') {
+        papTestMode = false;
         updateBreadcrumb({ id: 'langue_ecrite_group', nom: 'Langue Écrite' });
         showSubMenuLangueEcrite();
     }
     else if (catId === 'lsf_group') {
+        papTestMode = false;
         updateBreadcrumb({ id: 'lsf_group', nom: 'LSF' });
         showSubMenuLSF();
     }
     else if (catId === 'ponts_group') {
+        papTestMode = false;
         updateBreadcrumb({ id: 'ponts_group', nom: 'Ponts' });
         showSubMenuPonts();
     }
     else if (catId === 'temps_group') {
+        papTestMode = false;
         updateBreadcrumb({ id: 'temps_group', nom: 'Voyage dans le temps' });
         showSubMenuTemps();
     }
     else if (catId === 'vrai_faux_group') {
+        papTestMode = false;
         updateBreadcrumb({ id: 'vrai_faux_group', nom: 'Pro des formes' });
         showSubMenuVraiFaux();
     }
     else if (catId === 'recit_group') {
+        papTestMode = false;
         updateBreadcrumb({ id: 'recit_group', nom: 'Il était un signe' });
         showSubMenuRecit();
     }
     else if (catId === 'para_group') {
+        papTestMode = false;
         updateBreadcrumb({ id: 'para_group', nom: 'Assosigne' });
         showSubMenuParadigme();
     }
     else if (catId === 'anaphore_group') {
+        papTestMode = false;
         updateBreadcrumb({ id: 'anaphore_group', nom: 'À la recherche de sens' });
         showSubMenuAnaphore();
     }
     else if (catId === 'qui_est_ce_group') {
+        papTestMode = false;
         updateBreadcrumb({ id: 'qui_est_ce_group', nom: 'Poil aux pattes' });
+        showSubMenuQuiEstCeGroup();
+    }
+    else if (catId === 'pap_test_group') {
+        papTestMode = true;
+        updateBreadcrumb({ id: 'pap_test_group', nom: 'PAP_TEST' });
         showSubMenuQuiEstCeGroup();
     }
     else if (category) {
@@ -466,9 +610,8 @@ function shuffleArray(arr) {
     return a;
 }
 
-// Reconstruit à chaque lancement les questions de l'exercice "Temps" : mélange les vidéos
-// fixes du niveau avec un tirage aléatoire dans la banque partagée "en cours" (niveaux 2 et 3),
-// puis les transforme au format QCM générique (3 options fixes = les colonnes en_cours/fini/vava).
+// Reconstruit les questions de l'exercice "Temps" en mélangeant les vidéos du niveau
+// avec un tirage dans la banque partagée, puis les convertit au format QCM générique
 function prepareTempsQuestions(category) {
     if (!category._rawQuestions) {
         category._rawQuestions = category.questions;
@@ -687,7 +830,10 @@ function loadExercise(category, index) {
 
 
     if (category.type === 'grille_elimination') {
-        const renderFn = category.id === 'cat_qui_est_ce_garder' ? renderQuiEstCeGarder : renderQuiEstCe;
+        const isGarder = category.id === 'cat_qui_est_ce_garder';
+        const renderFn = papTestMode
+            ? (isGarder ? renderPapTestGarder : renderPapTestEliminer)
+            : (isGarder ? renderQuiEstCeGarder : renderQuiEstCe);
         container.innerHTML = `<h2>${item.titre}</h2>` + renderFn(category, item);
         return;
     }
@@ -888,8 +1034,7 @@ function renderQuiEstCe(category, exo) {
         <button class="btn-play btn-validate" id="btn-valider" onclick="validateStepEliminer()" disabled>Valider</button>`;
 }
 
-// Petite animation de démonstration : une étiquette "Exemple" reliée par un trait à l'ombre où la
-// déposer, avec un curseur qui parcourt le trait en boucle. Utilisée dans la consigne et le modal "?".
+// Animation de démo (consigne + modal "?") : étiquette reliée par un trait animé à l'ombre cible
 function buildEtiquetteDemoHtml() {
     return `
         <div class="etiquette-demo">
@@ -905,8 +1050,7 @@ function buildEtiquetteDemoHtml() {
         </div>`;
 }
 
-// Affiche une question de l'exercice "Langue Écrite — étiquettes à glisser-déposer" :
-// texte de référence en haut, phrase concernée + zone de dépôt à droite, banque d'étiquettes en dessous
+// Affiche une question "étiquettes à glisser-déposer" : texte de référence, phrase + zone de dépôt, banque
 function loadExerciseTexteEtiquettes(category, index) {
     currentCategory = category;
     currentStep = index;
@@ -1042,8 +1186,7 @@ function validateEtiquette() {
     }, 900);
 }
 
-// Affiche une question de l'exercice "Langue Écrite — texte à trous multiples" : la phrase
-// complète avec, à chaque emplacement "{}", un menu déroulant stylisé rempli avec banque_options
+// Affiche une question "texte à trous multiples" : un menu déroulant à chaque emplacement "{}"
 function loadExerciseTexteTrous(category, index) {
     currentCategory = category;
     currentStep = index;
@@ -1070,8 +1213,7 @@ function loadExerciseTexteTrous(category, index) {
 
     let phraseHtml = segments[0];
     for (let i = 0; i < item.reponses.length; i++) {
-        // Chaque trou peut avoir ses propres options (options_par_trou), sinon on retombe
-        // sur la banque partagée de la catégorie (ex: articles réutilisables à chaque trou)
+        // Options propres au trou, ou banque partagée de la catégorie par défaut
         const options = (item.options_par_trou && item.options_par_trou[i]) || category.banque_options || [];
         phraseHtml += `<select class="trou-select" id="trou-${i}" onchange="checkTrousComplete()">
                 <option value="" selected disabled>...</option>
@@ -1155,8 +1297,7 @@ function validateTrous() {
     }, 1200);
 }
 
-// Variante "liste" du texte à trous : toutes les phrases (mots simples) affichées en même temps
-// sur un seul écran, chacune avec son propre menu déroulant, un seul bouton "Valider" pour tout.
+// Variante "liste" du texte à trous : toutes les phrases affichées ensemble, un seul bouton Valider
 function loadExerciseTexteTrousListe(category) {
     currentCategory = category;
     currentStep = 0;
@@ -1260,9 +1401,7 @@ function validateTrousListe() {
 }
 
 // --- LANGUE ÉCRITE — TEXTE À TROUS PAR SAISIE LIBRE (ex. conjugaison) ---
-// Toutes les phrases affichées en même temps, chaque trou est un champ texte dont le
-// placeholder (le verbe à l'infinitif) s'efface dès qu'on tape et réapparaît si le champ est vidé
-// — comportement natif de l'attribut HTML "placeholder", aucun JS supplémentaire requis pour ça.
+// Chaque trou est un champ texte avec le verbe à l'infinitif en placeholder
 
 function loadExerciseTexteTrousSaisie(category) {
     currentCategory = category;
@@ -1359,8 +1498,7 @@ function validateSaisie() {
 }
 
 // --- LANGUE ÉCRITE — RÉÉCRITURE DE PHRASE ENTIÈRE (ex. accorder un mot en gras au pluriel) ---
-// La phrase d'origine (avec le mot ciblé en gras) est affichée, l'élève retape toute la phrase
-// transformée dans un champ libre. Toutes les phrases affichées en même temps.
+// La phrase d'origine (mot ciblé en gras) est affichée, l'élève retape la phrase transformée
 
 function loadExercisePhraseReecriture(category) {
     currentCategory = category;
@@ -1444,8 +1582,7 @@ function validateReecriture() {
 }
 
 // --- LANGUE ÉCRITE — ÉTIQUETTES À USAGE UNIQUE (ex. recettes) ---
-// Une ombre par mot de la liste, une banque d'étiquettes (autant que de mots, doublons compris)
-// à glisser une seule fois chacune. Vidéo de contexte affichée à droite.
+// Une ombre par mot, une banque d'étiquettes à glisser chacune une seule fois, vidéo de contexte à droite
 
 let selectedEtiquetteMultiIndex = null;
 
@@ -1656,9 +1793,7 @@ function validateEtiquetteMulti() {
 }
 
 // --- LANGUE ÉCRITE — TABLEAU DE TRI (ex. classer par article) ---
-// Un tableau à colonnes (Le / La / Les / L'), une banque d'étiquettes en dessous. Pas d'ombre :
-// on glisse l'étiquette directement dans la colonne ; hors des colonnes, elle revient d'où elle vient
-// (comportement natif du drag & drop HTML5 quand aucune zone valide ne traite le dépôt).
+// Tableau à colonnes (Le / La / Les / L') + banque d'étiquettes ; on glisse directement dans la colonne
 
 let selectedTriIndex = null;
 
@@ -1708,11 +1843,11 @@ function loadExerciseGrilleTri(category) {
 
     let html = `<div class="help-button-container"><button class="btn-help" onclick="openConsigneModal('${category.id}')">?</button></div>`;
     html += `
-        <div class="tri-tableau">${colonnesHtml}</div>
         <div class="te-bank" id="tri-bank"
              ondragover="event.preventDefault()"
              ondrop="handleTriBankDrop(event)"
              onclick="handleTriBankClick(event)">${bankHtml}</div>
+        <div class="tri-tableau${category.colonnes.length <= 5 ? ' tri-tableau-wide' : ''}">${colonnesHtml}</div>
         <button class="btn-play btn-validate" id="btn-valider-tri" onclick="validateTri()" disabled>Valider</button>`;
 
     container.innerHTML = html;
@@ -1852,8 +1987,7 @@ function validateTri() {
 }
 
 // --- TABLEAU DE TRI — VARIANTE "PHRASE PAR PHRASE" (ex. Fonctions grammaticales) ---
-// Comme loadExerciseGrilleTri, mais une phrase à la fois : la phrase en haut, le tableau,
-// puis seulement les étiquettes issues de cette phrase. On valide, puis on passe à la suivante.
+// Comme loadExerciseGrilleTri, mais une phrase à la fois : la phrase, le tableau, ses étiquettes
 
 function loadExerciseGrilleTriPhrase(category, phraseIndex) {
     currentCategory = category;
@@ -1908,11 +2042,11 @@ function loadExerciseGrilleTriPhrase(category, phraseIndex) {
     html += `
         <div class="step-counter">Phrase ${phraseIndex + 1} / ${category.phrases.length}</div>
         <div class="card-text-consigne"><p>${phrase.texte}</p></div>
-        <div class="tri-tableau">${colonnesHtml}</div>
         <div class="te-bank" id="tri-bank"
              ondragover="event.preventDefault()"
              ondrop="handleTriBankDrop(event)"
              onclick="handleTriBankClick(event)">${bankHtml}</div>
+        <div class="tri-tableau${category.colonnes.length <= 5 ? ' tri-tableau-wide' : ''}">${colonnesHtml}</div>
         <button class="btn-play btn-validate" id="btn-valider-tri" onclick="validateTriPhrase()" disabled>Valider</button>`;
 
     container.innerHTML = html;
@@ -1967,8 +2101,7 @@ function validateTriPhrase() {
 }
 
 // --- LANGUE ÉCRITE — RÉPONSE LIBRE (ex. négation) ---
-// L'élève tape sa réponse dans un champ texte ; notation par points partiels selon des critères
-// grammaticaux (présence de "ne/n'", de "pas", et le cas échéant d'un changement de sujet correct).
+// Réponse libre notée par points partiels selon des critères grammaticaux (ne/n', pas, sujet)
 
 // Analyse une réponse tapée et renvoie {score, max, manque} selon les critères de la question
 function gradeNegationAnswer(text, item) {
@@ -2053,11 +2186,7 @@ function checkNegationComplete() {
     if (btn) btn.disabled = !input || input.value.trim() === '';
 }
 
-// --- MESURE TEMPORAIRE (test de la notation) : affiche le score + le détail des critères,
-// et nécessite un second clic sur "Valider" (devenu "Question suivante") pour continuer.
-// À retirer / remettre en mode silencieux une fois la grille de notation validée. ---
-
-// Corrige la réponse libre et affiche le détail des points obtenus
+// Corrige la réponse libre, affiche le score/détail par critère, puis attend un second clic pour avancer
 function validateNegation() {
     if (!isClickable) return;
     const input = document.getElementById('neg-input');
@@ -2143,6 +2272,8 @@ function toggleAnimalSelection(id) {
 function validateStepEliminer() {
     if (!isClickable) return;
     isClickable = false;
+    stopPapTestMovement();
+    if (papTestMode) papTestSettleAllEliminer();
 
     const targets = new Set(currentExo.etapes[currentStep].indices_a_retirer);
     const wrongSelected = [...selectedAnimals].filter(id => !targets.has(id));
@@ -2183,6 +2314,8 @@ function validateStepEliminer() {
 function validateStepGarder() {
     if (!isClickable) return;
     isClickable = false;
+    stopPapTestMovement();
+    if (papTestMode) papTestSettleAllGarder();
 
     const targets = new Set(currentExo.etapes[currentStep].indices_a_valider);
     const wrongSelected = [...selectedAnimals].filter(id => !targets.has(id));
@@ -2224,7 +2357,8 @@ function confirmUnderstoodEliminer() {
     currentStep++;
     if (currentStep < currentExo.etapes.length) {
         const container = document.getElementById('exercise-container');
-        container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderQuiEstCe(currentCategory, currentExo);
+        const renderFn = papTestMode ? renderPapTestEliminer : renderQuiEstCe;
+        container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderFn(currentCategory, currentExo);
     } else {
         showFinishModal();
     }
@@ -2235,7 +2369,8 @@ function confirmUnderstoodGarder() {
     currentStep++;
     if (currentStep < currentExo.etapes.length) {
         const container = document.getElementById('exercise-container');
-        container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderQuiEstCeGarder(currentCategory, currentExo);
+        const renderFn = papTestMode ? renderPapTestGarder : renderQuiEstCeGarder;
+        container.innerHTML = `<h2>${currentExo.titre}</h2>` + renderFn(currentCategory, currentExo);
     } else {
         showFinishModal();
     }
@@ -2329,6 +2464,320 @@ function renderQuiEstCeGarder(category, exo) {
         <button class="btn-play btn-validate" id="btn-valider" onclick="validateStepGarder()" disabled>Valider</button>`;
 }
 
+// --- PAP_TEST : présentation animée de "Poil aux pattes" ---
+// Mêmes catégories et même logique de score que le mode classique, mise en scène différente :
+// les animaux se baladent dans leur habitat, on les glisse-dépose dans un enclos
+
+// Habitat de chaque animal, par id (partagé entre les catégories garder/éliminer)
+const PAP_TEST_HABITATS = {
+    3: 'mer',  // Pieuvre
+    7: 'mer',  // Mouette
+    11: 'mer', // Crabe
+    12: 'mer', // Hippopotame
+    13: 'mer', // Poisson
+    21: 'mer', // Dauphin
+    4: 'savane',  // Rhinocéros
+    5: 'savane',  // Girafe
+    6: 'savane',  // Gazelle
+    9: 'savane',  // Lion
+    15: 'savane', // Elephant
+    20: 'savane', // Zèbre
+    22: 'savane'  // Guepard
+};
+function getPapTestHabitat(id) {
+    return PAP_TEST_HABITATS[id] || 'terre';
+}
+
+// Un setInterval par carte en liberté, indexé par carte pour pouvoir l'arrêter individuellement
+const papTestRoamTimers = new Map();
+
+function startRoamingCard(card, zone) {
+    stopRoamingCard(card);
+    const tick = () => {
+        if (!card.isConnected || !card.classList.contains('roaming')) { stopRoamingCard(card); return; }
+        const maxX = Math.max(zone.clientWidth - card.offsetWidth - 6, 0);
+        const maxY = Math.max(zone.clientHeight - card.offsetHeight - 12, 0);
+        card.style.left = Math.round(6 + Math.random() * maxX) + 'px';
+        card.style.top = Math.round(6 + Math.random() * maxY) + 'px';
+    };
+    tick();
+    papTestRoamTimers.set(card, setInterval(tick, 2800 + Math.random() * 1800));
+}
+
+function stopRoamingCard(card) {
+    const id = papTestRoamTimers.get(card);
+    if (id) { clearInterval(id); papTestRoamTimers.delete(card); }
+}
+
+function stopPapTestMovement() {
+    papTestRoamTimers.forEach(id => clearInterval(id));
+    papTestRoamTimers.clear();
+}
+
+// Range en grille les animaux encore en liberté dans une zone
+function papTestSettleZone(zoneEl) {
+    if (!zoneEl) return;
+    zoneEl.classList.add('settled');
+    zoneEl.querySelectorAll('.pap-animal.roaming').forEach(card => {
+        stopRoamingCard(card);
+        card.classList.add('settled');
+        card.style.left = '';
+        card.style.top = '';
+    });
+}
+
+function papTestSettleAllGarder() {
+    ['habitat-terre', 'habitat-savane', 'habitat-mer', 'grille-garder']
+        .forEach(id => papTestSettleZone(document.getElementById(id)));
+}
+
+function papTestSettleAllEliminer() {
+    ['elim-terre', 'elim-savane', 'elim-mer', 'sas-zone']
+        .forEach(id => papTestSettleZone(document.getElementById(id)));
+}
+
+// Démarre le déplacement de toutes les cartes "en liberté" dans les habitats (mode garder)
+function initPapTestRoaming() {
+    document.querySelectorAll('.habitat-zone').forEach(zone => {
+        zone.querySelectorAll('.pap-animal.roaming').forEach(card => startRoamingCard(card, zone));
+    });
+}
+
+// Démarre le déplacement des cartes dans chaque sous-zone d'habitat de l'enclos (mode éliminer)
+function initPapTestRoamingEliminer() {
+    ['terre', 'savane', 'mer'].forEach(habitatKey => {
+        const zone = document.getElementById(`elim-${habitatKey}`);
+        if (!zone) return;
+        zone.querySelectorAll('.pap-animal.roaming').forEach(card => startRoamingCard(card, zone));
+    });
+}
+
+let papTestDraggedId = null;
+
+function papTestDragStart(e, id) {
+    papTestDraggedId = id;
+    e.dataTransfer.setData('text/plain', id);
+    e.dataTransfer.effectAllowed = 'move';
+    // On fige l'animal dès qu'on l'attrape, avant même le dépôt : plus simple à viser pendant le glisser
+    const el = document.getElementById(`animal-${id}`);
+    if (el) stopRoamingCard(el);
+}
+
+// Si le glisser est annulé (déposé hors d'une zone valide), l'animal reprend sa balade là où il est
+function papTestDragEnd(e, id) {
+    const el = document.getElementById(`animal-${id}`);
+    if (!el || !el.classList.contains('roaming') || papTestRoamTimers.has(el)) return;
+    const zone = el.parentElement;
+    if (!zone) return;
+    startRoamingCard(el, zone);
+}
+
+function papTestGetDraggedId(e) {
+    const raw = e.dataTransfer.getData('text/plain');
+    const id = raw !== '' ? parseInt(raw) : papTestDraggedId;
+    return (id !== null && !isNaN(id)) ? id : null;
+}
+
+// --- Mode GARDER (sélection) : glisser un animal de son habitat vers l'enclos ---
+
+function papTestSelectGarder(id) {
+    if (!isClickable) return;
+    const el = document.getElementById(`animal-${id}`);
+    const enclos = document.getElementById('grille-garder');
+    if (!el || !enclos || el.classList.contains('garder-excluded') || el.classList.contains('in-enclos')) return;
+
+    el.classList.add('animal-selected', 'in-enclos');
+    el.onclick = () => papTestDeselectGarder(id);
+    enclos.appendChild(el);
+    startRoamingCard(el, enclos); // reste "roaming" : continue de se déplacer, mais dans l'enclos
+
+    selectedAnimals.add(id);
+    const btn = document.getElementById('btn-valider');
+    if (btn) btn.disabled = selectedAnimals.size === 0;
+}
+
+function papTestDeselectGarder(id) {
+    if (!isClickable) return;
+    const el = document.getElementById(`animal-${id}`);
+    if (!el || !el.classList.contains('in-enclos')) return;
+    const habitat = document.getElementById(`habitat-${getPapTestHabitat(id)}`);
+    if (!habitat) return;
+
+    el.classList.remove('animal-selected', 'in-enclos');
+    el.onclick = () => papTestSelectGarder(id);
+    habitat.appendChild(el);
+    startRoamingCard(el, habitat);
+
+    selectedAnimals.delete(id);
+    const btn = document.getElementById('btn-valider');
+    if (btn) btn.disabled = selectedAnimals.size === 0;
+}
+
+function papTestDropEnclosGarder(e) {
+    e.preventDefault();
+    const id = papTestGetDraggedId(e);
+    if (id !== null) papTestSelectGarder(id);
+}
+
+function papTestDropHabitat(e) {
+    e.preventDefault();
+    const id = papTestGetDraggedId(e);
+    if (id !== null) papTestDeselectGarder(id);
+}
+
+// Construit une section habitat (terre, mer ou savane) ; les animaux exclus par une étape
+// précédente (isEliminatedGarder) ne sont plus affichés du tout
+function papTestHabitatSectionHtml(category, habitatKey) {
+    const animals = category.banque_animaux
+        .filter(a => getPapTestHabitat(a.id) === habitatKey && !isEliminatedGarder(a.id));
+
+    const roamingCardHtml = a => `
+        <div class="animal-card pap-animal roaming" id="animal-${a.id}" draggable="true"
+             onclick="papTestSelectGarder(${a.id})" ondragstart="papTestDragStart(event, ${a.id})"
+             ondragend="papTestDragEnd(event, ${a.id})">
+            <img src="${a.img}" alt="${a.nom}">
+        </div>`;
+
+    return `
+        <div class="habitat-zone habitat-${habitatKey}" id="habitat-${habitatKey}"
+             ondragover="event.preventDefault()" ondrop="papTestDropHabitat(event)">
+            ${animals.map(roamingCardHtml).join('')}
+        </div>`;
+}
+
+// Génère la scène du mode "garder" : habitats animés + enclos à remplir
+function renderPapTestGarder(category, exo) {
+    window.scrollTo(0, 0);
+    if (currentStep === 0) currentSessionId = crypto.randomUUID();
+    consecutiveErrors = 0;
+    isClickable = true;
+    selectedAnimals = new Set();
+    stepErrors = 0;
+    stepStartTime = Date.now();
+    stopPapTestMovement();
+    const etape = exo.etapes[currentStep];
+    targetsLeftInStep = [...etape.indices_a_valider];
+
+    setTimeout(initPapTestRoaming, 0);
+
+    return `
+        <div class="step-counter">Étape ${currentStep + 1} / ${exo.etapes.length}</div>
+        <video id="video-player" class="video-main" controls autoplay src="${etape.video}"></video>
+        <p class="pap-test-instructions">Glisse (ou clique sur) les animaux qui correspondent jusque dans l'enclos.</p>
+        <div class="pap-test-habitats">
+            ${papTestHabitatSectionHtml(category, 'terre')}
+            ${papTestHabitatSectionHtml(category, 'savane')}
+            ${papTestHabitatSectionHtml(category, 'mer')}
+        </div>
+        <div class="enclos-wrapper">
+            <div class="enclos" id="grille-garder"
+                 ondragover="event.preventDefault()" ondrop="papTestDropEnclosGarder(event)"></div>
+        </div>
+        <button class="btn-play btn-validate" id="btn-valider" onclick="validateStepGarder()" disabled>Valider</button>`;
+}
+
+// --- Mode ÉLIMINER : glisser un animal hors de l'enclos, vers le sas de sortie ---
+
+function papTestSelectEliminer(id) {
+    if (!isClickable) return;
+    const el = document.getElementById(`animal-${id}`);
+    const sas = document.getElementById('sas-zone');
+    if (!el || !sas || el.classList.contains('already-removed') || el.classList.contains('in-sas')) return;
+
+    el.classList.add('animal-selected', 'in-sas');
+    el.onclick = () => papTestDeselectEliminer(id);
+    sas.appendChild(el);
+    startRoamingCard(el, sas); // reste "roaming" : continue de se déplacer, mais dans le sas
+
+    selectedAnimals.add(id);
+    const btn = document.getElementById('btn-valider');
+    if (btn) btn.disabled = selectedAnimals.size === 0;
+}
+
+function papTestDeselectEliminer(id) {
+    if (!isClickable) return;
+    const el = document.getElementById(`animal-${id}`);
+    const habitatKey = getPapTestHabitat(id);
+    const zone = document.getElementById(`elim-${habitatKey}`);
+    if (!el || !zone || !el.classList.contains('in-sas')) return;
+
+    el.classList.remove('animal-selected', 'in-sas');
+    el.onclick = () => papTestSelectEliminer(id);
+    zone.appendChild(el);
+    startRoamingCard(el, zone);
+
+    selectedAnimals.delete(id);
+    const btn = document.getElementById('btn-valider');
+    if (btn) btn.disabled = selectedAnimals.size === 0;
+}
+
+// Le sas est un enfant de l'enclos : on stoppe la propagation du drop jusqu'à lui
+function papTestDropSas(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    const id = papTestGetDraggedId(e);
+    if (id !== null) papTestSelectEliminer(id);
+}
+
+function papTestDropEnclosEliminer(e) {
+    e.preventDefault();
+    const id = papTestGetDraggedId(e);
+    if (id !== null) papTestDeselectEliminer(id);
+}
+
+// Comme papTestHabitatSectionHtml, mais pour l'enclos "éliminer" (isAlreadyRemoved, papTestSelectEliminer)
+function papTestEliminerZoneCardsHtml(category, habitatKey) {
+    const animals = category.banque_animaux
+        .filter(a => getPapTestHabitat(a.id) === habitatKey && !isAlreadyRemoved(a.id));
+
+    const roamingCardHtml = a => `
+        <div class="animal-card pap-animal roaming" id="animal-${a.id}" draggable="true"
+             onclick="papTestSelectEliminer(${a.id})" ondragstart="papTestDragStart(event, ${a.id})"
+             ondragend="papTestDragEnd(event, ${a.id})">
+            <img src="${a.img}" alt="${a.nom}">
+        </div>`;
+
+    return animals.map(roamingCardHtml).join('');
+}
+
+// Génère la scène du mode "éliminer" : habitats (terre, savane, mer) + sas de sortie à droite
+function renderPapTestEliminer(category, exo) {
+    window.scrollTo(0, 0);
+    if (currentStep === 0) currentSessionId = crypto.randomUUID();
+    consecutiveErrors = 0;
+    isClickable = true;
+    selectedAnimals = new Set();
+    stepErrors = 0;
+    stepStartTime = Date.now();
+    stopPapTestMovement();
+    const etape = exo.etapes[currentStep];
+    targetsLeftInStep = [...etape.indices_a_retirer];
+
+    setTimeout(initPapTestRoamingEliminer, 0);
+
+    return `
+        <div class="step-counter">Étape ${currentStep + 1} / ${exo.etapes.length}</div>
+        <video id="video-player" class="video-main" controls autoplay src="${etape.video}"></video>
+        <p class="pap-test-instructions">Glisse (ou clique sur) les animaux à exclure jusque dans le sas de sortie.</p>
+        <div class="enclos-wrapper enclos-wrapper-eliminer">
+            <div class="enclos enclos-eliminer" id="grille-elimination"
+                 ondragover="event.preventDefault()" ondrop="papTestDropEnclosEliminer(event)">
+                <div class="elim-zone elim-zone-terre habitat-terre" id="elim-terre">
+                    ${papTestEliminerZoneCardsHtml(category, 'terre')}
+                </div>
+                <div class="elim-zone elim-zone-savane habitat-savane" id="elim-savane">
+                    ${papTestEliminerZoneCardsHtml(category, 'savane')}
+                </div>
+                <div class="elim-zone elim-zone-mer habitat-mer" id="elim-mer">
+                    ${papTestEliminerZoneCardsHtml(category, 'mer')}
+                </div>
+                <div class="sas-zone" id="sas-zone"
+                     ondragover="event.stopPropagation(); event.preventDefault()" ondrop="papTestDropSas(event)"></div>
+            </div>
+        </div>
+        <button class="btn-play btn-validate" id="btn-valider" onclick="validateStepEliminer()" disabled>Valider</button>`;
+}
+
 // --- UTILITAIRES VIDÉO ET MODALES ---
 
 function openContextModal() {
@@ -2405,12 +2854,11 @@ function openConsigneModal(groupName) {
         .filter((c, i, arr) => arr.findIndex(x => x.consignes === c.consignes) === i)
         .map(c => ({ label: c.nom, src: c.consignes }));
 
-    const showEtiquetteDemo = categories.some(c => c.type === 'text_to_text' || c.type === 'texte_trous_etiquettes');
+    const showEtiquetteDemo = categories.some(c => c.type === 'text_to_text' || c.type === 'texte_trous_etiquettes' || c.type === 'grille_tri');
     renderConsigneModal(texteConsigne, videos, showEtiquetteDemo ? buildEtiquetteDemoHtml() : '');
 }
 
-// Consigne globale des anaphores (commune à anaphore1 et anaphore2, un seul fichier
-// suffit donc pas de risque de doublon même si les 2 versions partagent le même "groupe")
+// Consigne globale des anaphores, commune à anaphore1 et anaphore2
 const ANAPHORE_GLOBAL_CONSIGNE = 'assets/videos/anaphore1/ana_consignes.mp4';
 function openAnaphoreGlobalConsigneModal() {
     renderConsigneModal(
@@ -2602,7 +3050,7 @@ function goToSubMenu() {
     } else if (currentCategory.id.includes('anaphore')) {
         startCategory('anaphore_group');
     } else if (currentCategory.id.includes('qui_est_ce')) {
-        startCategory('qui_est_ce_group');
+        startCategory(papTestMode ? 'pap_test_group' : 'qui_est_ce_group');
     } else if (currentCategory.id.startsWith('cat_le_')) {
         startCategory('langue_ecrite_group');
     } else if (currentCategory.id === 'cat_pronoms') {
@@ -2680,7 +3128,7 @@ let _savedUserState = null;
 
 function resetIdentification() {
     // Sauvegarde l'état actuel pour pouvoir l'annuler via la croix
-    _savedUserState = userIdentifier
+    _savedUserState = (userIdentifier || isTeacher)
         ? { userIdentifier, userAge, isTeacher: !!isTeacher }
         : null;
 
@@ -2717,7 +3165,7 @@ function closeIdentModal() {
     userIdentifier = _savedUserState.userIdentifier;
     userAge = _savedUserState.userAge;
     isTeacher = _savedUserState.isTeacher;
-    localStorage.setItem('userIdentifier', userIdentifier);
+    if (userIdentifier) localStorage.setItem('userIdentifier', userIdentifier);
     if (userAge !== null) localStorage.setItem('userAge', userAge);
     if (isTeacher) {
         sessionStorage.setItem('teacherMode', 'true');
@@ -2731,7 +3179,7 @@ function closeIdentModal() {
 
 function updateUserDisplay() {
     const el = document.getElementById('current-user-display');
-    if (el) el.textContent = userIdentifier || '—';
+    if (el) el.textContent = userIdentifier || (isTeacher ? 'Mode Professeur' : '—');
 }
 
 // --- GESTION DES THEMES ---
@@ -2767,6 +3215,20 @@ document.addEventListener('click', function(e) {
 (function() {
     const saved = localStorage.getItem('theme') || 'ludique';
     setTheme(saved);
+})();
+
+function setTextSize(value) {
+    const pct = parseInt(value, 10);
+    document.documentElement.style.fontSize = pct + '%';
+    localStorage.setItem('textSize', pct);
+}
+
+// Application de la taille de texte sauvegardée au chargement
+(function() {
+    const saved = localStorage.getItem('textSize') || '100';
+    setTextSize(saved);
+    const slider = document.getElementById('text-size-slider');
+    if (slider) slider.value = saved;
 })();
 
 function sendDataToSupabase(questionId, typeExercice, estCorrect, nbErreurs, dureeSecondes, extra = {}) {
@@ -2859,11 +3321,106 @@ const CATEGORY_LABELS = {
     'cat_le_d72_choix_mots': 'Langue Écrite — Accords en genre et en nombre (Défi 5)'
 };
 
+// --- Groupes d'élèves (côté professeur, synchronisés via la table Supabase "groupes") ---
+
+async function fetchTeacherGroups() {
+    const res = await fetch(
+        SUPABASE_URL + '/rest/v1/groupes?select=*&order=created_at.desc',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+    );
+    return res.json(); // [{ id, nom, eleves, created_at }, ...]
+}
+
+async function createTeacherGroup(nom, eleves) {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/groupes', {
+        method: 'POST',
+        headers: {
+            'apikey':        SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type':  'application/json',
+            'Prefer':        'return=representation'
+        },
+        body: JSON.stringify({ nom, eleves })
+    });
+    if (!res.ok) throw new Error('Échec de la création du groupe');
+    const rows = await res.json();
+    return rows[0];
+}
+
+const teacherResultsState = {
+    users:     { sort: 'alpha', search: '' },
+    groups:    { sort: 'alpha', search: '' },
+    groupView: { sort: 'alpha', search: '' }
+};
+
+let _teacherResultsUsers = [];       // tous les élèves (dédupliqués)
+let _teacherResultsUsersChrono = []; // mêmes élèves, triés par activité la plus récente
+let _teacherGroupsCache = [];        // groupes chargés depuis Supabase pour la session en cours
+let _isCreatingGroup = false;
+let _groupCreateSelectedUsers = new Set();
+let _currentGroupView = null;
+
+function cycleSortMode(mode) {
+    return mode === 'alpha' ? 'chrono-desc' : mode === 'chrono-desc' ? 'chrono-asc' : 'alpha';
+}
+
+function sortIcon(mode) {
+    if (mode === 'chrono-desc') return { src: 'assets/logos/sablierhaut.png', alt: 'Trié : plus récent d\'abord' };
+    if (mode === 'chrono-asc')  return { src: 'assets/logos/sablierbas.png',  alt: 'Trié : plus ancien d\'abord' };
+    return { src: 'assets/logos/alphabet.png', alt: 'Trié par ordre alphabétique' };
+}
+
+function updateSortButton(btnId, mode) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    const icon = sortIcon(mode);
+    btn.innerHTML = `<img src="${icon.src}" alt="">`;
+    btn.title = icon.alt + ' (clic pour changer)';
+    btn.setAttribute('aria-label', btn.title);
+}
+
+function sortNamesByMode(names, mode, chronoOrder) {
+    if (mode === 'alpha') return [...names].sort((a, b) => a.localeCompare(b, 'fr'));
+    const order = mode === 'chrono-desc' ? chronoOrder : [...chronoOrder].reverse();
+    const nameSet = new Set(names);
+    const sorted = order.filter(n => nameSet.has(n));
+    const extra = names.filter(n => !order.includes(n));
+    return sorted.concat(extra);
+}
+
+function sortGroupsList(groups, mode) {
+    if (mode === 'alpha') return [...groups].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+    if (mode === 'chrono-desc') return [...groups].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    return [...groups].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+}
+
+async function loadUsersChronoData() {
+    const res = await fetch(
+        SUPABASE_URL + '/rest/v1/statistiques?select=utilisateur,date_heure&order=date_heure.desc',
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+    );
+    const data = await res.json();
+    const seen = new Set();
+    _teacherResultsUsersChrono = [];
+    data.forEach(r => {
+        if (r.utilisateur && !seen.has(r.utilisateur)) {
+            seen.add(r.utilisateur);
+            _teacherResultsUsersChrono.push(r.utilisateur);
+        }
+    });
+    _teacherResultsUsers = [..._teacherResultsUsersChrono];
+}
+
 async function showResultsPage() {
     const menu = document.getElementById('menu-container');
     const container = document.getElementById('exercise-container');
     menu.classList.add('hidden');
     container.classList.remove('hidden');
+    _currentGroupView = null;
+    _isCreatingGroup = false;
+    _groupCreateSelectedUsers = new Set();
+    teacherResultsState.users.search = '';
+    teacherResultsState.groups.search = '';
 
     document.getElementById('nav-breadcrumb').innerHTML =
         '<a href="#" onclick="showMenu()">Accueil</a> > Résultats';
@@ -2871,52 +3428,409 @@ async function showResultsPage() {
     container.innerHTML = '<div class="results-page"><p class="results-loading">Chargement...</p></div>';
 
     try {
-        const res = await fetch(
-            SUPABASE_URL + '/rest/v1/statistiques?select=utilisateur&order=utilisateur.asc',
-            { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
-        );
-        const data = await res.json();
-        const users = [...new Set(data.map(r => r.utilisateur))].filter(Boolean).sort();
-
-        if (users.length === 0) {
-            container.innerHTML = '<div class="results-page"><p class="results-empty">Aucune donnée disponible.</p></div>';
-            return;
-        }
-
-        container.innerHTML = `
-            <div class="results-page">
-                <h2 class="results-title">Résultats</h2>
-                <p class="results-subtitle">${users.length} utilisateur${users.length > 1 ? 's' : ''}</p>
-                <input type="text" class="users-search" placeholder="Rechercher un utilisateur..."
-                       oninput="filterUsers(this.value)">
-                <div class="users-list">
-                    ${users.map(u => `
-                        <button class="user-card" data-user="${u}" onclick="showUserResults(this.dataset.user)">
-                            <span class="user-name">${u}</span>
-                            <span class="user-arrow">›</span>
-                        </button>`).join('')}
-                </div>
-            </div>`;
+        const [, groups] = await Promise.all([loadUsersChronoData(), fetchTeacherGroups()]);
+        _teacherGroupsCache = groups;
+        renderResultsPageShell();
+        renderResultsUsersList();
+        renderResultsGroupsList();
     } catch(e) {
         container.innerHTML = '<div class="results-page"><p class="results-error">Erreur de chargement.</p></div>';
     }
 }
 
-function filterUsers(query) {
-    const q = query.toLowerCase();
-    document.querySelectorAll('.user-card').forEach(card => {
-        const match = card.dataset.user.toLowerCase().includes(q);
-        card.style.display = match ? '' : 'none';
-    });
+function renderResultsPageShell() {
+    const container = document.getElementById('exercise-container');
+    container.innerHTML = `
+        <div class="results-page results-page-wide">
+            <h2 class="results-title">Résultats</h2>
+            <div class="results-columns">
+                <div class="results-column">
+                    <h3 class="results-column-title">Élèves</h3>
+                    <div class="list-toolbar">
+                        <button id="results-users-sort-btn" class="btn-sort-toggle" onclick="toggleResultsUsersSort()"></button>
+                        <input type="text" class="users-search" placeholder="Rechercher un élève..."
+                               oninput="filterResultsUsersList(this.value)">
+                    </div>
+                    <div class="users-list" id="results-users-list"></div>
+                </div>
+                <div class="results-column">
+                    <div class="results-column-header">
+                        <h3 class="results-column-title">Groupes</h3>
+                        <div id="group-create-trigger">
+                            <button class="btn-export-csv" onclick="startCreateGroup()">Créer un groupe</button>
+                        </div>
+                    </div>
+                    <div id="group-create-panel"></div>
+                    <div class="list-toolbar">
+                        <button id="results-groups-sort-btn" class="btn-sort-toggle" onclick="toggleResultsGroupsSort()"></button>
+                        <input type="text" class="users-search" placeholder="Rechercher un groupe..."
+                               oninput="filterResultsGroupsList(this.value)">
+                    </div>
+                    <div class="users-list" id="results-groups-list"></div>
+                </div>
+            </div>
+        </div>`;
+    updateSortButton('results-users-sort-btn', teacherResultsState.users.sort);
+    updateSortButton('results-groups-sort-btn', teacherResultsState.groups.sort);
+}
+
+function userCardHtml(u) {
+    if (_isCreatingGroup) {
+        const checked = _groupCreateSelectedUsers.has(u) ? 'checked' : '';
+        return `
+            <button type="button" class="user-card user-card-selectable" onclick="toggleGroupUserCheckboxFromCard(this)">
+                <span class="user-name">${u}</span>
+                <input type="checkbox" class="user-select-checkbox" data-user-checkbox="${u}" ${checked}
+                       onclick="event.stopPropagation()" onchange="onGroupUserCheckboxChange(this)">
+            </button>`;
+    }
+    return `
+        <button class="user-card" data-user="${u}" onclick="showUserResults(this.dataset.user)">
+            <span class="user-name">${u}</span>
+            <span class="user-arrow">›</span>
+        </button>`;
+}
+
+function renderResultsUsersList() {
+    const el = document.getElementById('results-users-list');
+    if (!el) return;
+    const q = teacherResultsState.users.search.toLowerCase();
+    const filtered = _teacherResultsUsers.filter(u => u.toLowerCase().includes(q));
+    const sorted = sortNamesByMode(filtered, teacherResultsState.users.sort, _teacherResultsUsersChrono);
+    el.innerHTML = sorted.length
+        ? sorted.map(u => userCardHtml(u)).join('')
+        : `<p class="results-empty results-empty-inline">${_teacherResultsUsers.length ? 'Aucun résultat.' : 'Aucune donnée disponible.'}</p>`;
+}
+
+function filterResultsUsersList(value) {
+    teacherResultsState.users.search = value;
+    renderResultsUsersList();
+}
+
+function toggleResultsUsersSort() {
+    teacherResultsState.users.sort = cycleSortMode(teacherResultsState.users.sort);
+    updateSortButton('results-users-sort-btn', teacherResultsState.users.sort);
+    renderResultsUsersList();
+}
+
+function renderResultsGroupsList() {
+    const el = document.getElementById('results-groups-list');
+    if (!el) return;
+    const q = teacherResultsState.groups.search.toLowerCase();
+    const groups = _teacherGroupsCache.filter(g => g.nom.toLowerCase().includes(q));
+    const sorted = sortGroupsList(groups, teacherResultsState.groups.sort);
+    el.innerHTML = sorted.length
+        ? sorted.map(g => `
+            <button class="user-card group-card" onclick="showGroupResults(${g.id})">
+                <span class="user-name">${g.nom}</span>
+                <span class="group-count">${g.eleves.length} élève${g.eleves.length > 1 ? 's' : ''}</span>
+                <span class="user-arrow">›</span>
+            </button>`).join('')
+        : '<p class="results-empty results-empty-inline">Aucun groupe créé.</p>';
+}
+
+function filterResultsGroupsList(value) {
+    teacherResultsState.groups.search = value;
+    renderResultsGroupsList();
+}
+
+function toggleResultsGroupsSort() {
+    teacherResultsState.groups.sort = cycleSortMode(teacherResultsState.groups.sort);
+    updateSortButton('results-groups-sort-btn', teacherResultsState.groups.sort);
+    renderResultsGroupsList();
+}
+
+function groupCreatePanelHtml() {
+    return `
+        <div class="group-create-panel">
+            <input type="text" id="new-group-name" class="users-search" placeholder="Nom du groupe...">
+            <p id="group-create-error" class="ident-error hidden"></p>
+            <div class="group-create-actions">
+                <button class="btn-play" onclick="validateCreateGroup()">Valider</button>
+                <button class="btn-export-csv" onclick="cancelCreateGroup()">Annuler</button>
+            </div>
+        </div>`;
+}
+
+function updateGroupCreateUI() {
+    const triggerEl = document.getElementById('group-create-trigger');
+    if (triggerEl) {
+        triggerEl.innerHTML = _isCreatingGroup
+            ? ''
+            : '<button class="btn-export-csv" onclick="startCreateGroup()">Créer un groupe</button>';
+    }
+    const panelEl = document.getElementById('group-create-panel');
+    if (panelEl) panelEl.innerHTML = _isCreatingGroup ? groupCreatePanelHtml() : '';
+    renderResultsUsersList();
+}
+
+function startCreateGroup() {
+    _isCreatingGroup = true;
+    _groupCreateSelectedUsers = new Set();
+    updateGroupCreateUI();
+}
+
+function cancelCreateGroup() {
+    _isCreatingGroup = false;
+    _groupCreateSelectedUsers = new Set();
+    updateGroupCreateUI();
+}
+
+function toggleGroupUserCheckboxFromCard(card) {
+    const cb = card.querySelector('.user-select-checkbox');
+    if (!cb) return;
+    cb.checked = !cb.checked;
+    onGroupUserCheckboxChange(cb);
+}
+
+function onGroupUserCheckboxChange(cb) {
+    const user = cb.dataset.userCheckbox;
+    if (cb.checked) _groupCreateSelectedUsers.add(user);
+    else _groupCreateSelectedUsers.delete(user);
+}
+
+async function validateCreateGroup() {
+    const nameInput = document.getElementById('new-group-name');
+    const errorEl = document.getElementById('group-create-error');
+    const name = nameInput.value.trim();
+    const users = [..._groupCreateSelectedUsers];
+
+    if (!name || users.length === 0) {
+        errorEl.textContent = !name ? 'Donne un nom au groupe.' : 'Sélectionne au moins un élève.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    const validateBtn = document.querySelector('.group-create-actions .btn-play');
+    if (validateBtn) validateBtn.disabled = true;
+    errorEl.classList.add('hidden');
+
+    try {
+        const newGroup = await createTeacherGroup(name, users);
+        _teacherGroupsCache.push(newGroup);
+        _isCreatingGroup = false;
+        _groupCreateSelectedUsers = new Set();
+        updateGroupCreateUI();
+        renderResultsGroupsList();
+    } catch(e) {
+        errorEl.textContent = 'Erreur lors de la création du groupe.';
+        errorEl.classList.remove('hidden');
+        if (validateBtn) validateBtn.disabled = false;
+    }
+}
+
+// Affiche la liste des élèves d'un groupe (une seule colonne, comme la liste globale)
+async function showGroupResults(groupId) {
+    const group = _teacherGroupsCache.find(g => g.id === groupId);
+    if (!group) { showResultsPage(); return; }
+    _currentGroupView = group;
+    teacherResultsState.groupView.search = '';
+
+    const menu = document.getElementById('menu-container');
+    const container = document.getElementById('exercise-container');
+    menu.classList.add('hidden');
+    container.classList.remove('hidden');
+
+    document.getElementById('nav-breadcrumb').innerHTML =
+        `<a href="#" onclick="showMenu()">Accueil</a> > <a href="#" onclick="showResultsPage()">Résultats</a> > ${group.nom}`;
+
+    container.innerHTML = `
+        <div class="results-page">
+            <h2 class="results-title">${group.nom}</h2>
+            <p class="results-subtitle">${group.eleves.length} élève${group.eleves.length > 1 ? 's' : ''}</p>
+            <div class="list-toolbar">
+                <button id="group-view-sort-btn" class="btn-sort-toggle" onclick="toggleGroupViewSort()"></button>
+                <input type="text" class="users-search" placeholder="Rechercher un élève..."
+                       oninput="filterGroupViewList(this.value)">
+            </div>
+            <div class="users-list" id="group-view-users-list"></div>
+        </div>`;
+    updateSortButton('group-view-sort-btn', teacherResultsState.groupView.sort);
+
+    if (_teacherResultsUsersChrono.length === 0) {
+        try { await loadUsersChronoData(); } catch(e) { /* tri chronologique indisponible, alpha reste utilisable */ }
+    }
+    renderGroupViewList();
+}
+
+function renderGroupViewList() {
+    const el = document.getElementById('group-view-users-list');
+    if (!el || !_currentGroupView) return;
+    const q = teacherResultsState.groupView.search.toLowerCase();
+    const filtered = _currentGroupView.eleves.filter(u => u.toLowerCase().includes(q));
+    const sorted = sortNamesByMode(filtered, teacherResultsState.groupView.sort, _teacherResultsUsersChrono);
+    el.innerHTML = sorted.length
+        ? sorted.map(u => `
+            <button class="user-card" data-user="${u}" onclick="showUserResults(this.dataset.user)">
+                <span class="user-name">${u}</span>
+                <span class="user-arrow">›</span>
+            </button>`).join('')
+        : '<p class="results-empty results-empty-inline">Aucun résultat.</p>';
+}
+
+function filterGroupViewList(value) {
+    teacherResultsState.groupView.search = value;
+    renderGroupViewList();
+}
+
+function toggleGroupViewSort() {
+    teacherResultsState.groupView.sort = cycleSortMode(teacherResultsState.groupView.sort);
+    updateSortButton('group-view-sort-btn', teacherResultsState.groupView.sort);
+    renderGroupViewList();
 }
 
 let _currentUserRows = [];
 
+let _userResultsSortMode = 'chrono-desc';
+
+// Pilier d'appartenance d'une catégorie, pour le regroupement en mode "alphabétique"
+function getExercisePillarLabel(catId) {
+    if (catId.startsWith('cat_le_')) return 'Langue Écrite';
+    if (catId.includes('anaphore') || catId === 'cat_pronoms') return 'Ponts';
+    return 'LSF';
+}
+
+function toggleUserResultsSort() {
+    _userResultsSortMode = cycleSortMode(_userResultsSortMode);
+    updateSortButton('user-results-sort-btn', _userResultsSortMode);
+    renderUserResultsBody();
+}
+
+function toggleCategoryBlock(btn) {
+    const block = btn.closest('.category-block');
+    if (block) block.classList.toggle('collapsed');
+}
+
+function categoryBlockHtml(session) {
+    const { catId, rows: catRows, runLabel, dateLabel } = session;
+    const label = CATEGORY_LABELS[catId] || catId;
+    const isQCM = catRows.some(r => r.est_correct !== null);
+
+    let html = `<div class="category-block">
+        <div class="category-block-header">
+            <div>
+                <h3 class="category-label">${label}${runLabel}</h3>
+                <span class="category-block-date">${dateLabel}</span>
+            </div>
+            <button type="button" class="btn-collapse-toggle" onclick="toggleCategoryBlock(this)" aria-label="Afficher/masquer les résultats">
+                <img src="assets/logos/deroulant.png" alt="">
+            </button>
+        </div>`;
+
+    if (isQCM) {
+        const correct = catRows.filter(r => r.est_correct).length;
+        const total   = catRows.length;
+        const pct     = Math.round((correct / total) * 100);
+        const avgTime = (catRows.reduce((s, r) => s + (r.duree_secondes || 0), 0) / total).toFixed(1);
+
+        html += `<div class="stat-summary">${pct}% de bonnes réponses (${correct}/${total}) — moy. ${avgTime}s / question</div>`;
+        html += `<table class="results-table">`;
+        catRows.forEach(r => {
+            const nom = (r.question_id || '').split('_').pop().toUpperCase();
+            html += `<tr>
+                <td class="q-name">${nom}</td>
+                <td class="${r.est_correct ? 'correct' : 'incorrect'}">${r.est_correct ? 'Correct' : 'Incorrect'}</td>
+                <td class="q-time">${r.duree_secondes != null ? r.duree_secondes + 's' : '—'}</td>
+            </tr>`;
+        });
+        html += `</table>`;
+    } else {
+        const totalErr = catRows.reduce((s, r) => s + (r.nb_erreurs || 0), 0);
+        html += `<div class="stat-summary">${totalErr} erreur${totalErr > 1 ? 's' : ''} au total sur le défi</div>`;
+        html += `<table class="results-table">`;
+        catRows.forEach(r => {
+            const qid = r.question_id || '';
+            const etapeMatch = qid.match(/_etape(\d+)$/i);
+            const nom = etapeMatch
+                ? qid.replace(/_etape\d+$/i, '').replace(/^qec_/i, '').toUpperCase() + ` — Étape ${etapeMatch[1]}`
+                : qid.split('_').pop().toUpperCase();
+            const err = r.nb_erreurs != null ? `${r.nb_erreurs} erreur${r.nb_erreurs > 1 ? 's' : ''}` : '—';
+            const mauvaises = r.nb_mauvaises_selections != null ? `${r.nb_mauvaises_selections} mauvaise${r.nb_mauvaises_selections > 1 ? 's' : ''} sél.` : null;
+            const oublis = r.nb_oublis != null ? `${r.nb_oublis} oubli${r.nb_oublis > 1 ? 's' : ''}` : null;
+            const detail = (mauvaises || oublis) ? `<br><span class="q-detail">${[mauvaises, oublis].filter(Boolean).join(' · ')}</span>` : '';
+            html += `<tr>
+                <td class="q-name">${nom}</td>
+                <td>${err}${detail}</td>
+                <td class="q-time">${r.duree_secondes != null ? r.duree_secondes + 's' : '—'}</td>
+            </tr>`;
+        });
+        html += `</table>`;
+    }
+
+    html += `</div>`;
+    return html;
+}
+
+function renderUserResultsBody() {
+    const el = document.getElementById('user-results-body');
+    if (!el || !_currentUserRows.length) return;
+
+    // Regroupement : date → sessions (une session = un run complet identifié par session_id)
+    const byDate = {};
+    const dateOrder = [];
+    _currentUserRows.forEach(r => {
+        const d = r.date_heure
+            ? new Date(r.date_heure).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+            : 'Date inconnue';
+        if (!byDate[d]) { byDate[d] = []; dateOrder.push(d); }
+        // Clé de session : session_id si dispo, sinon fallback exercice (anciennes données)
+        const sid = r.session_id || `__legacy__${r.exercice}`;
+        let session = byDate[d].find(s => s.sid === sid);
+        if (!session) {
+            session = { sid, catId: r.exercice, rows: [], dateLabel: d };
+            byDate[d].push(session);
+        }
+        session.rows.push(r);
+    });
+
+    // Numéroter les sessions multiples d'une même catégorie dans une même journée
+    for (const d of dateOrder) {
+        const countByCat = {};
+        byDate[d].forEach(s => { countByCat[s.catId] = (countByCat[s.catId] || 0) + 1; });
+        const runByCat = {};
+        byDate[d].forEach(s => {
+            runByCat[s.catId] = (runByCat[s.catId] || 0) + 1;
+            s.runLabel = countByCat[s.catId] > 1 ? ` — Tentative ${runByCat[s.catId]}` : '';
+        });
+    }
+
+    let html = '';
+
+    if (_userResultsSortMode === 'alpha') {
+        // Regroupement par pilier (Langue Écrite / LSF / Ponts), puis ordre alphabétique du nom d'exercice
+        const allSessions = dateOrder.flatMap(d => byDate[d]);
+        const pillars = ['Langue Écrite', 'LSF', 'Ponts'];
+        pillars.forEach(pillar => {
+            const sessions = allSessions
+                .filter(s => getExercisePillarLabel(s.catId) === pillar)
+                .sort((a, b) => (CATEGORY_LABELS[a.catId] || a.catId).localeCompare(CATEGORY_LABELS[b.catId] || b.catId, 'fr'));
+            if (sessions.length === 0) return;
+            html += `<div class="date-block"><div class="date-label">${pillar}</div>`;
+            sessions.forEach(s => { html += categoryBlockHtml(s); });
+            html += `</div>`;
+        });
+    } else {
+        // Chronologique : la plus récente d'abord (comme avant), ou inversé
+        const orderedDates = _userResultsSortMode === 'chrono-asc' ? [...dateOrder].reverse() : dateOrder;
+        orderedDates.forEach(date => {
+            const sessions = _userResultsSortMode === 'chrono-asc' ? [...byDate[date]].reverse() : byDate[date];
+            html += `<div class="date-block"><div class="date-label">${date}</div>`;
+            sessions.forEach(s => { html += categoryBlockHtml(s); });
+            html += `</div>`;
+        });
+    }
+
+    el.innerHTML = html;
+}
+
 async function showUserResults(user) {
     const container = document.getElementById('exercise-container');
 
+    const groupCrumb = _currentGroupView
+        ? ` > <a href="#" onclick="showGroupResults(${_currentGroupView.id})">${_currentGroupView.nom}</a>`
+        : '';
     document.getElementById('nav-breadcrumb').innerHTML =
-        `<a href="#" onclick="showMenu()">Accueil</a> > <a href="#" onclick="showResultsPage()">Résultats</a> > ${user}`;
+        `<a href="#" onclick="showMenu()">Accueil</a> > <a href="#" onclick="showResultsPage()">Résultats</a>${groupCrumb} > ${user}`;
 
     container.innerHTML = '<div class="results-page"><p class="results-loading">Chargement...</p></div>';
 
@@ -2931,35 +3845,6 @@ async function showUserResults(user) {
         if (rows.length === 0) {
             container.innerHTML = `<div class="results-page"><h2>${user}</h2><p class="results-empty">Aucune donnée.</p></div>`;
             return;
-        }
-
-        // Regroupement : date → sessions (une session = un run complet identifié par session_id)
-        const byDate = {};
-        const dateOrder = [];
-        rows.forEach(r => {
-            const d = r.date_heure
-                ? new Date(r.date_heure).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                : 'Date inconnue';
-            if (!byDate[d]) { byDate[d] = []; dateOrder.push(d); }
-            // Clé de session : session_id si dispo, sinon fallback exercice (anciennes données)
-            const sid = r.session_id || `__legacy__${r.exercice}`;
-            let session = byDate[d].find(s => s.sid === sid);
-            if (!session) {
-                session = { sid, catId: r.exercice, rows: [] };
-                byDate[d].push(session);
-            }
-            session.rows.push(r);
-        });
-
-        // Numéroter les sessions multiples d'une même catégorie dans une même journée
-        for (const d of dateOrder) {
-            const countByCat = {};
-            byDate[d].forEach(s => { countByCat[s.catId] = (countByCat[s.catId] || 0) + 1; });
-            const runByCat = {};
-            byDate[d].forEach(s => {
-                runByCat[s.catId] = (runByCat[s.catId] || 0) + 1;
-                s.runLabel = countByCat[s.catId] > 1 ? ` — Tentative ${runByCat[s.catId]}` : '';
-            });
         }
 
         const exercicesPresents = new Set(rows.map(r => r.exercice));
@@ -2977,9 +3862,12 @@ async function showUserResults(user) {
             { key: 'langue_ecrite', label: 'Langue Écrite' },
         ];
 
-        let html = `<div class="results-page">
+        container.innerHTML = `<div class="results-page">
             <div class="results-user-header">
-                <h2 class="results-title">${user}</h2>
+                <div class="results-user-title-row">
+                    <h2 class="results-title">${user}</h2>
+                    <button id="user-results-sort-btn" class="btn-sort-toggle" onclick="toggleUserResultsSort()"></button>
+                </div>
                 <div class="export-btn-group">
                     <button class="btn-export-csv" onclick="exportUserCSV('${u}')" title="Tout exporter">⬇ Tout exporter</button>
                     ${btnGroups.map(g => {
@@ -2991,66 +3879,11 @@ async function showUserResults(user) {
                         </button>`;
                     }).join('')}
                 </div>
-            </div>`;
-
-        for (const date of dateOrder) {
-            html += `<div class="date-block"><div class="date-label">${date}</div>`;
-
-            for (const session of byDate[date]) {
-                const { catId, rows: catRows, runLabel } = session;
-                const label = CATEGORY_LABELS[catId] || catId;
-                const isQCM = catRows.some(r => r.est_correct !== null);
-
-                html += `<div class="category-block"><h3 class="category-label">${label}${runLabel}</h3>`;
-
-                if (isQCM) {
-                    const correct = catRows.filter(r => r.est_correct).length;
-                    const total   = catRows.length;
-                    const pct     = Math.round((correct / total) * 100);
-                    const avgTime = (catRows.reduce((s, r) => s + (r.duree_secondes || 0), 0) / total).toFixed(1);
-
-                    html += `<div class="stat-summary">${pct}% de bonnes réponses (${correct}/${total}) — moy. ${avgTime}s / question</div>`;
-                    html += `<table class="results-table">`;
-                    catRows.forEach(r => {
-                        const nom = (r.question_id || '').split('_').pop().toUpperCase();
-                        html += `<tr>
-                            <td class="q-name">${nom}</td>
-                            <td class="${r.est_correct ? 'correct' : 'incorrect'}">${r.est_correct ? 'Correct' : 'Incorrect'}</td>
-                            <td class="q-time">${r.duree_secondes != null ? r.duree_secondes + 's' : '—'}</td>
-                        </tr>`;
-                    });
-                    html += `</table>`;
-                } else {
-                    const totalErr = catRows.reduce((s, r) => s + (r.nb_erreurs || 0), 0);
-                    html += `<div class="stat-summary">${totalErr} erreur${totalErr > 1 ? 's' : ''} au total sur le défi</div>`;
-                    html += `<table class="results-table">`;
-                    catRows.forEach(r => {
-                        const qid = r.question_id || '';
-                        const etapeMatch = qid.match(/_etape(\d+)$/i);
-                        const nom = etapeMatch
-                            ? qid.replace(/_etape\d+$/i, '').replace(/^qec_/i, '').toUpperCase() + ` — Étape ${etapeMatch[1]}`
-                            : qid.split('_').pop().toUpperCase();
-                        const err = r.nb_erreurs != null ? `${r.nb_erreurs} erreur${r.nb_erreurs > 1 ? 's' : ''}` : '—';
-                        const mauvaises = r.nb_mauvaises_selections != null ? `${r.nb_mauvaises_selections} mauvaise${r.nb_mauvaises_selections > 1 ? 's' : ''} sél.` : null;
-                        const oublis = r.nb_oublis != null ? `${r.nb_oublis} oubli${r.nb_oublis > 1 ? 's' : ''}` : null;
-                        const detail = (mauvaises || oublis) ? `<br><span class="q-detail">${[mauvaises, oublis].filter(Boolean).join(' · ')}</span>` : '';
-                        html += `<tr>
-                            <td class="q-name">${nom}</td>
-                            <td>${err}${detail}</td>
-                            <td class="q-time">${r.duree_secondes != null ? r.duree_secondes + 's' : '—'}</td>
-                        </tr>`;
-                    });
-                    html += `</table>`;
-                }
-
-                html += `</div>`;
-            }
-
-            html += `</div>`;
-        }
-
-        html += `</div>`;
-        container.innerHTML = html;
+            </div>
+            <div id="user-results-body"></div>
+        </div>`;
+        updateSortButton('user-results-sort-btn', _userResultsSortMode);
+        renderUserResultsBody();
     } catch(e) {
         container.innerHTML = `<div class="results-page"><h2>${user}</h2><p class="results-error">Erreur de chargement.</p></div>`;
     }

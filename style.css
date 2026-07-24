@@ -1,7 +1,5 @@
 /* ==========================================================================
-   0. POLICE LUCIOLE
-   Placez les fichiers Luciole-Regular.woff2 et Luciole-Bold.woff2
-   dans le dossier assets/fonts/ (téléchargeables sur luciole-vision.com)
+   0. POLICE LUCIOLE (fichiers dans assets/fonts/, voir luciole-vision.com)
    ========================================================================== */
 @font-face {
     font-family: 'Luciole';
@@ -111,6 +109,160 @@ header {
     margin-bottom: 20px;
     min-height: 60px;
 }
+
+/* ==========================================================================
+   PAGE D'ACCUEIL — mode "showcase" (bascule via HOME_MENU_STYLE, script.js)
+   ========================================================================== */
+#menu-container.menu-showcase {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 14px;
+    min-height: calc(100vh - 110px);
+}
+
+/* Cascade d'entrée : les 3 cartes apparaissent l'une après l'autre au chargement */
+@keyframes home-showcase-card-in {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.home-showcase-card {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 140px;
+    background: var(--white);
+    border: none;
+    border-radius: 18px;
+    padding: 28px 36px;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    overflow: hidden;
+    /* Tilt 3D piloté en JS (handleShowcaseTilt) : transition courte pour lisser le suivi */
+    transition: transform 0.15s ease-out, box-shadow 0.25s ease;
+    transform-style: preserve-3d;
+    font-family: inherit;
+    animation: home-showcase-card-in 0.5s ease both;
+}
+
+.home-showcase-card:nth-child(1) { animation-delay: 0s; }
+.home-showcase-card:nth-child(2) { animation-delay: 0.12s; }
+.home-showcase-card:nth-child(3) { animation-delay: 0.24s; }
+
+.home-showcase-card:hover {
+    box-shadow: 0 14px 30px rgba(0,0,0,0.18);
+}
+
+/* Formes en fond : grossissent depuis le point du curseur (--mx/--my mis à jour en JS) */
+.home-showcase-shapes {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: radial-gradient(circle, var(--pillar-color) 2.5px, transparent 3px);
+    background-size: 30px 30px;
+    opacity: 0;
+    transform: scale(0.35);
+    transform-origin: var(--mx, 50%) var(--my, 50%);
+    transition: opacity 0.4s ease, transform 0.5s ease;
+    pointer-events: none;
+}
+
+.home-showcase-card:hover .home-showcase-shapes {
+    opacity: 0.16;
+    transform: scale(1);
+}
+
+.home-showcase-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 3px solid var(--pillar-color);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+
+.home-showcase-card:hover::before { opacity: 1; }
+
+/* Liseré cliquable qui s'élargit au survol (desktop) ou au tap (:active, tactile) */
+.home-showcase-arrow-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--pillar-color);
+    transition: width 0.3s ease;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.home-showcase-card:hover .home-showcase-arrow-panel,
+.home-showcase-card:active .home-showcase-arrow-panel {
+    width: 90px;
+}
+
+.home-showcase-arrow {
+    font-size: 2.2rem;
+    line-height: 1;
+    color: #fff;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.3s ease 0.05s, transform 0.3s ease 0.05s;
+}
+
+.home-showcase-card:hover .home-showcase-arrow,
+.home-showcase-card:active .home-showcase-arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.home-showcase-main {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.home-showcase-main .btn-logo {
+    height: 84px;
+    width: 84px;
+}
+
+.home-showcase-text h3 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    color: var(--pillar-color);
+}
+
+.home-showcase-text p {
+    margin: 0;
+    font-size: 1rem;
+    color: #475569;
+    max-width: 480px;
+}
+
+/* Colonne compacte sur tactile */
+@media (hover: none), (max-width: 768px) {
+    #menu-container.menu-showcase { min-height: auto; }
+    .home-showcase-card { flex-direction: column; text-align: center; padding: 22px; }
+    .home-showcase-main { flex-direction: column; gap: 10px; }
+    .home-showcase-text p { max-width: 100%; }
+}
+
+body.theme-sombre .home-showcase-card          { background: #1e293b; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+body.theme-sombre .home-showcase-text p        { color: #94a3b8; }
+
+body.theme-ludique .home-showcase-card         { border-radius: 26px; }
 
 /* Sous-menus et boutons de variantes */
 .submenu-selection {
@@ -351,6 +503,139 @@ header {
     border-radius: 5px;
 }
 
+/* ==========================================================================
+   POIL AUX PATTES — habitats animés et enclos
+   ========================================================================== */
+
+.pap-test-instructions {
+    text-align: center;
+    font-weight: 600;
+    color: #333;
+    margin: 4px 0 20px;
+}
+
+.pap-test-habitats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.habitat-zone {
+    position: relative;
+    flex: 1 1 320px;
+    min-height: 230px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.15);
+}
+
+.habitat-terre {
+    background: linear-gradient(180deg, #d9f0a3 0%, #8bc34a 55%, #5f8a37 100%);
+}
+
+.habitat-mer {
+    background: linear-gradient(180deg, #9fdcf5 0%, #2f8fc4 55%, #114f78 100%);
+}
+
+.habitat-savane {
+    background: linear-gradient(180deg, #f6e6a8 0%, #e0c064 45%, #c9a94a 70%, #a9822e 100%);
+}
+
+.pap-animal {
+    width: 56px;
+    margin: 0;
+}
+
+.pap-animal.roaming {
+    position: absolute;
+    transition: left 2.6s ease-in-out, top 2.6s ease-in-out;
+    cursor: grab;
+    z-index: 3;
+}
+
+/* Rangement en grille des animaux au moment de la validation */
+.pap-animal.roaming.settled {
+    position: static;
+    transition: none;
+}
+
+.habitat-zone.settled, .elim-zone.settled {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 6px;
+    padding: 6px;
+}
+
+.enclos-wrapper {
+    max-width: 900px;
+    margin: 18px auto 24px;
+}
+
+.enclos {
+    position: relative;
+    overflow: hidden;
+    min-height: 220px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 10px;
+    padding: 16px;
+    border-radius: 10px;
+    background: rgba(139, 94, 43, 0.08);
+    border: 10px solid transparent;
+    border-image: repeating-linear-gradient(90deg, #8b5a2b 0 10px, #c88a4a 10px 16px) 30;
+}
+
+/* Enclos du mode "éliminer" : mêmes habitats qu'en mode garder, plus un sas de sortie à droite */
+.enclos-wrapper-eliminer {
+    max-width: 1000px;
+    margin: 18px auto 24px;
+}
+
+.enclos-eliminer {
+    --sas-w: 130px; /* largeur du sas, réutilisée par les sous-zones d'habitat ci-dessous */
+    position: relative;
+    overflow: hidden;
+    min-height: 560px;
+    background-color: #5c3d24;
+}
+
+/* Sous-zones d'habitat : terre en haut, savane et mer en bas, largeur calée sur celle du sas */
+.elim-zone {
+    position: absolute;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.elim-zone-terre  { top: 0;   left: 0; width: calc(100% - var(--sas-w)); height: 50%; border-bottom: 3px dashed #3d2712; }
+.elim-zone-savane { top: 50%; left: 0; width: calc((100% - var(--sas-w)) / 2); height: 50%; border-right: 3px dashed #3d2712; }
+.elim-zone-mer    { top: 50%; left: calc((100% - var(--sas-w)) / 2); width: calc((100% - var(--sas-w)) / 2); height: 50%; }
+
+.sas-zone {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--sas-w);
+    background-color: #8a6239;
+    border-left: 3px dashed #3d2712;
+    z-index: 2;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 8px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.sas-zone .pap-animal {
+    width: 40px;
+}
+
 /* Mise en page des options (Horizontale pour images / Verticale pour vidéos) */
 .options-grid-horizontal {
     display: flex;
@@ -550,8 +835,7 @@ header {
     text-align: left;
 }
 
-/* Zone de dépôt : "ombre" pleine (sans encadré), découpée dans la même forme que les étiquettes.
-   Sa taille (width/height) est fixée dynamiquement en JS pour coller à celle des étiquettes. */
+/* Zone de dépôt : "ombre" pleine, découpée dans la forme des étiquettes, taille ajustée en JS */
 .te-dropzone {
     flex: 0 0 auto;
     min-width: 120px;
@@ -630,8 +914,7 @@ body.theme-sombre .te-dropzone.drag-over { background: rgba(96,165,250,0.4); }
 body.theme-ludique .te-dropzone  { background: rgba(249,115,22,0.18); }
 body.theme-ludique .te-dropzone.drag-over { background: rgba(249,115,22,0.35); }
 
-/* En mode sombre, le fond de page (#0f172a) est presque identique au noir de l'étiquette (#111827) :
-   on l'éclaircit nettement pour qu'elle reste bien visible. */
+/* Étiquette éclaircie en mode sombre */
 body.theme-sombre .etiquette {
     background: #475569;
     box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.08);
@@ -804,23 +1087,46 @@ body.theme-sombre .te-liste-mot   { color: #e2e8f0; }
    ========================================================================== */
 
 .tri-tableau {
-    display: grid;
-    /* S'adapte au nombre de colonnes : elles restent côte à côte tant qu'il y a la place
-       (4-5 colonnes sur un écran normal), et passent à la ligne au-delà (ex: 11 colonnes). */
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    /* Colonnes toujours sur une seule ligne, avec scroll horizontal plutôt qu'un empilement */
+    display: flex;
+    flex-wrap: nowrap;
     gap: 12px;
     max-width: 1100px;
     margin: 20px auto;
+    overflow-x: auto;
+    padding-bottom: 16px; /* espace sous la scrollbar */
+    scrollbar-width: auto;
+    scrollbar-color: var(--accent-blue) #e2e8f0;
 }
 
+/* Scrollbar horizontale bien visible et stylisée (Chrome / Edge / Safari) */
+.tri-tableau::-webkit-scrollbar { height: 14px; }
+.tri-tableau::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 8px; }
+.tri-tableau::-webkit-scrollbar-thumb {
+    background: var(--accent-blue);
+    border-radius: 8px;
+    border: 3px solid #e2e8f0;
+}
+.tri-tableau::-webkit-scrollbar-thumb:hover { background: var(--primary-blue); }
+
 .tri-colonne {
-    min-width: 0;
+    flex: 0 0 190px;
+    min-width: 190px;
     min-height: 160px;
     background: rgba(59, 130, 246, 0.06);
     border: 3px dashed var(--accent-blue);
     border-radius: 14px;
     padding: 10px;
     transition: background 0.2s, border-color 0.2s;
+}
+
+/* Tableaux à peu de colonnes (5 ou moins) : elles s'étalent pour occuper la largeur disponible */
+.tri-tableau-wide {
+    max-width: 1300px;
+}
+.tri-tableau-wide .tri-colonne {
+    flex: 1 1 200px;
+    max-width: 320px;
 }
 
 .tri-colonne.drag-over {
@@ -846,8 +1152,7 @@ body.theme-sombre .te-liste-mot   { color: #e2e8f0; }
     min-height: 40px;
 }
 
-/* Une fois posée dans une colonne (souvent étroite), l'étiquette ne doit plus déborder :
-   elle peut rétrécir et le texte passe à la ligne plutôt que de dépasser la case. */
+/* L'étiquette rétrécit et son texte passe à la ligne dans une colonne étroite */
 .tri-colonne-body .etiquette,
 .tri-colonne-body .image-carte {
     flex-shrink: 1;
@@ -868,19 +1173,24 @@ body.theme-sombre .te-liste-mot   { color: #e2e8f0; }
 }
 
 @media (max-width: 700px) {
-    .tri-tableau { grid-template-columns: 1fr; }
-}
-@media (min-width: 701px) and (max-width: 900px) {
-    .tri-tableau { grid-template-columns: repeat(2, 1fr); }
+    .tri-colonne, .tri-tableau-wide .tri-colonne { flex-basis: 76vw; min-width: 76vw; max-width: 76vw; }
 }
 
 body.theme-sombre .tri-colonne         { background: rgba(96,165,250,0.1); border-color: #60a5fa; }
 body.theme-sombre .tri-colonne.drag-over { background: rgba(96,165,250,0.25); border-color: #93c5fd; }
 body.theme-sombre .tri-colonne-header  { color: #93c5fd; border-bottom-color: #60a5fa; }
+body.theme-sombre .tri-tableau                     { scrollbar-color: #60a5fa #1e293b; }
+body.theme-sombre .tri-tableau::-webkit-scrollbar-track { background: #1e293b; }
+body.theme-sombre .tri-tableau::-webkit-scrollbar-thumb { background: #60a5fa; border-color: #1e293b; }
+body.theme-sombre .tri-tableau::-webkit-scrollbar-thumb:hover { background: #93c5fd; }
 
 body.theme-ludique .tri-colonne        { border-color: #f97316; background: rgba(249,115,22,0.08); }
 body.theme-ludique .tri-colonne.drag-over { background: rgba(249,115,22,0.2); }
 body.theme-ludique .tri-colonne-header { color: #f97316; border-bottom-color: #f97316; }
+body.theme-ludique .tri-tableau                     { scrollbar-color: #f97316 #fff3e0; }
+body.theme-ludique .tri-tableau::-webkit-scrollbar-track { background: #fff3e0; }
+body.theme-ludique .tri-tableau::-webkit-scrollbar-thumb { background: #f97316; border-color: #fff3e0; }
+body.theme-ludique .tri-tableau::-webkit-scrollbar-thumb:hover { background: #ea580c; }
 
 /* Carte-image façon "timbre" : cadre blanc, ombre, liseré ondulé (pointillé) tout autour de l'image */
 .image-carte {
@@ -990,8 +1300,7 @@ body.theme-ludique .image-carte::before { border-color: #f97316; }
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
-/* MESURE TEMPORAIRE (test de la notation) : couleurs révélant si la réponse était bonne,
-   partielle ou fausse, + badges par critère. À simplifier en neutre une fois le test terminé. */
+/* Couleurs de correction : bonne réponse, partielle ou fausse, + badges par critère */
 .neg-input.neg-input-correct   { border-color: var(--success); background: #dcfce7; }
 .neg-input.neg-input-partial   { border-color: #eab308; background: #fef9c3; }
 .neg-input.neg-input-incorrect { border-color: var(--error); background: #fee2e2; }
@@ -1103,8 +1412,7 @@ body.theme-ludique .trou-select {
 }
 body.theme-ludique .trou-select:focus { box-shadow: 0 0 0 3px rgba(249,115,22,0.25); }
 
-/* Champ de saisie libre pour les trous (ex. conjugaison) : le verbe à l'infinitif apparaît en
-   placeholder estompé et disparaît automatiquement dès qu'on tape (comportement natif du navigateur) */
+/* Champ de saisie libre pour les trous (ex. conjugaison) : placeholder = verbe à l'infinitif */
 .conj-input {
     display: inline-block;
     width: 195px;
@@ -1152,8 +1460,7 @@ body.theme-ludique .conj-input { border-radius: 16px; border-color: #f97316; }
 body.theme-ludique .conj-input::placeholder { color: #f97316; }
 body.theme-ludique .conj-input:focus { box-shadow: 0 0 0 3px rgba(249,115,22,0.25); }
 
-/* Réécriture de phrase entière : la phrase d'origine (avec le mot ciblé en gras) au-dessus
-   d'un champ de saisie pleine largeur pour retaper toute la phrase transformée */
+/* Réécriture de phrase : phrase d'origine (mot ciblé en gras) au-dessus du champ de saisie */
 .reecriture-item {
     display: block;
     padding: 14px 4px;
@@ -1223,8 +1530,6 @@ body.theme-sombre .reecriture-original strong { color: #93c5fd; background-color
     color: var(--primary-blue);
 }
 
-/* Placer après : .close-modal { ... } */
-
 #modal-consigne-video {
     width: 100%;
     max-height: 70vh;
@@ -1256,9 +1561,8 @@ body.theme-sombre .reecriture-original strong { color: #93c5fd; background-color
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-/* AJOUTEZ CECI ICI */
 .mini-context-container video {
-    width: 100% !important; /* Force la vidéo à prendre les 120px du parent */
+    width: 100% !important; /* Cale la vidéo sur la largeur (120px) du conteneur */
     display: block;
 }
 
@@ -1465,7 +1769,7 @@ body.theme-sombre .reecriture-original strong { color: #93c5fd; background-color
 
 .error-flash { animation: blink-red 0.2s ease-in-out 5; }
 
-/* Supprime le grayscale pendant le flash d'erreur pour que le rouge soit visible */
+/* Neutralise le grayscale le temps du flash d'erreur */
 .animal-card.error-flash {
     filter: none !important;
     opacity: 1 !important;
@@ -1566,6 +1870,9 @@ body.theme-sombre .reecriture-original strong { color: #93c5fd; background-color
     .video-main { max-height: 300px; }
     .video-zoom { transform: translate(-50%, -50%) scale(1.1); }
     .mini-context-container { width: 90px; top: 70px; left: 10px; }
+    .habitat-zone { flex: 1 1 100%; min-height: 190px; }
+    .enclos-eliminer { --sas-w: 80px; min-height: 460px; }
+    .sas-zone .pap-animal { width: 32px; }
 }
 
 /* ==========================================================================
@@ -1701,6 +2008,55 @@ body.theme-sombre .reecriture-original strong { color: #93c5fd; background-color
     margin: 16px 0;
 }
 
+/* Curseur de taille de texte */
+.text-size-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.text-size-label {
+    font-weight: 700;
+    color: var(--primary-blue);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+.text-size-label-big { font-size: 1.3rem; }
+
+.text-size-slider {
+    flex: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
+    cursor: pointer;
+}
+.text-size-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    border: 3px solid var(--white);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    cursor: pointer;
+}
+.text-size-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    border: 3px solid var(--white);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    cursor: pointer;
+}
+.text-size-slider::-moz-range-track {
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
+}
+
 .settings-user-label {
     margin: 0 0 4px 0;
     font-size: 0.82rem;
@@ -1746,12 +2102,17 @@ body.theme-sombre .ident-form input:focus{ border-color: #60a5fa; background: #1
 body.theme-sombre .ident-form label      { color: #93c5fd; }
 body.theme-sombre .ident-mode-btn        { color: #93c5fd; }
 body.theme-sombre .settings-separator    { border-color: #334155; }
+body.theme-sombre .text-size-label       { color: #93c5fd; }
+body.theme-sombre .text-size-slider,
+body.theme-sombre .text-size-slider::-moz-range-track { background: #334155; }
 body.theme-sombre .settings-user-label  { color: #64748b; }
 body.theme-sombre .current-user-display { color: #93c5fd; }
 body.theme-sombre .btn-change-user       { border-color: #60a5fa; color: #93c5fd; }
 body.theme-sombre .btn-change-user:hover { background: #60a5fa; color: #0f172a; }
 
 /* Overrides thème ludique pour l'identification */
+body.theme-ludique .text-size-slider::-webkit-slider-thumb,
+body.theme-ludique .text-size-slider::-moz-range-thumb { background: #f97316; }
 body.theme-ludique .ident-mode-selector  { border-color: #f97316; border-radius: 16px; }
 body.theme-ludique .ident-mode-btn.active{ background: #f97316; }
 body.theme-ludique .ident-form input     { border-radius: 14px; border-color: #fed7aa; }
@@ -1831,39 +2192,43 @@ body.theme-ludique .btn-change-user:hover{ background: #f97316; color: white; }
 
 .theme-options {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 22px;
 }
 
 .theme-card {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-radius: 10px;
+    justify-content: center;
+    padding: 5px;
+    border-radius: 50%;
     border: 2px solid transparent;
     cursor: pointer;
-    font-family: inherit;
-    font-size: 1rem;
-    text-align: left;
+    background: none;
     transition: all 0.2s;
 }
 
-.theme-card:hover { transform: scale(1.02); }
+.theme-card:hover { transform: scale(1.08); }
 
+/* Le mode actif se distingue nettement : agrandi, entouré d'un halo dans sa propre couleur */
 .theme-card.theme-active {
     border-width: 3px;
-    font-weight: 700;
+    transform: scale(1.18);
 }
 
-/* Previews des thèmes */
-.theme-clair-preview  { background: #f8fafc; color: #1e3a8a; border-color: #3b82f6; }
-.theme-sombre-preview { background: #1e293b; color: #93c5fd;  border-color: #60a5fa; }
-.theme-ludique-preview{ background: #fff9e6; color: #1a1a2e;  border-color: #f97316; }
+/* Previews des thèmes : couleur de bordure/halo propre à chaque mode */
+.theme-clair-preview   { border-color: #3b82f6; }
+.theme-sombre-preview  { border-color: #60a5fa; }
+.theme-ludique-preview { border-color: #f97316; }
+
+.theme-clair-preview.theme-active   { box-shadow: 0 0 0 4px rgba(59,130,246,0.28); }
+.theme-sombre-preview.theme-active  { box-shadow: 0 0 0 4px rgba(96,165,250,0.28); }
+.theme-ludique-preview.theme-active { box-shadow: 0 0 0 4px rgba(249,115,22,0.28); }
 
 .theme-swatch {
-    width: 22px;
-    height: 22px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     flex-shrink: 0;
     border: 2px solid rgba(0,0,0,0.1);
@@ -1963,10 +2328,103 @@ body.theme-ludique .correct-border        { box-shadow: 0 0 20px #16a34a; }
     padding: 0 10px;
 }
 
+.results-page-wide { max-width: 1100px; }
+
 .results-title {
     color: var(--primary-blue);
     margin-bottom: 4px;
 }
+
+/* Vue professeur : colonne élèves + colonne groupes côte à côte */
+.results-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+.results-column {
+    flex: 1 1 320px;
+    min-width: 280px;
+}
+
+.results-column-title {
+    color: var(--primary-blue);
+    margin: 0 0 12px;
+    font-size: 1.2rem;
+}
+
+.results-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.results-column-header .results-column-title { margin-bottom: 0; }
+
+.results-empty-inline {
+    padding: 18px;
+    font-size: 1rem;
+}
+
+/* Barre de tri + recherche, réutilisée par les 3 listes (élèves, groupes, élèves d'un groupe) */
+.list-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.list-toolbar .users-search { flex: 1; margin-bottom: 0; }
+
+.btn-sort-toggle {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--accent-blue);
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-sort-toggle:hover { background: rgba(59, 130, 246, 0.1); }
+.btn-sort-toggle img { width: 22px; height: 22px; object-fit: contain; }
+
+/* Carte de groupe : réutilise le style user-card avec un compteur d'élèves en plus */
+.group-count {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0 10px;
+    white-space: nowrap;
+}
+
+/* Checkbox de sélection d'élève pendant la création d'un groupe */
+.user-card-selectable { cursor: pointer; }
+.user-select-checkbox {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--accent-blue);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Formulaire de création de groupe */
+.group-create-panel {
+    background: rgba(59, 130, 246, 0.06);
+    border: 2px dashed var(--accent-blue);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+.group-create-panel .users-search { margin-bottom: 10px; }
+.group-create-actions { display: flex; gap: 10px; }
+.group-create-actions .btn-play { margin: 0; padding: 10px 20px; font-size: 1rem; }
 
 .results-user-header {
     display: flex;
@@ -1977,6 +2435,12 @@ body.theme-ludique .correct-border        { box-shadow: 0 0 20px #16a34a; }
     margin-bottom: 20px;
 }
 .results-user-header .results-title { margin-bottom: 0; }
+
+.results-user-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
 .export-btn-group {
     display: flex;
@@ -2108,13 +2572,55 @@ body.theme-ludique .users-search:focus { border-color: #f97316; }
     margin-bottom: 12px;
 }
 
-.category-label {
-    margin: 0 0 10px 0;
-    font-size: 1.05rem;
-    color: var(--primary-blue);
+.category-block-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
     border-bottom: 2px solid var(--accent-blue);
     padding-bottom: 8px;
+    margin-bottom: 10px;
 }
+
+.category-label {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--primary-blue);
+}
+
+.category-block-date {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #94a3b8;
+}
+
+.btn-collapse-toggle {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-collapse-toggle:hover { background: rgba(59, 130, 246, 0.1); }
+.btn-collapse-toggle img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    transition: transform 0.25s ease;
+}
+
+.category-block.collapsed .btn-collapse-toggle img { transform: rotate(180deg); }
+.category-block.collapsed .stat-summary,
+.category-block.collapsed .results-table { display: none; }
 
 .stat-summary {
     background: #f0f7ff;
@@ -2167,11 +2673,19 @@ body.theme-sombre .category-block { background: #1e293b; border-color: #334155; 
 body.theme-sombre .stat-summary   { background: #0f172a; color: #93c5fd; }
 body.theme-sombre .results-table .q-name { color: #93c5fd; }
 body.theme-sombre .date-label     { background: #60a5fa; color: #0f172a; }
+body.theme-sombre .results-column-title { color: #93c5fd; }
+body.theme-sombre .group-count    { color: #94a3b8; }
+body.theme-sombre .btn-sort-toggle { background: #1e293b; border-color: #60a5fa; }
+body.theme-sombre .btn-sort-toggle:hover { background: #334155; }
+body.theme-sombre .group-create-panel { background: rgba(96,165,250,0.12); border-color: #60a5fa; }
 
 /* Thème ludique — résultats */
 body.theme-ludique .user-card     { border-radius: 20px; border-color: #fed7aa; }
 body.theme-ludique .user-card:hover { border-color: #f97316; }
 body.theme-ludique .category-block { border-radius: 20px; }
+body.theme-ludique .btn-sort-toggle { border-radius: 14px; border-color: #f97316; }
+body.theme-ludique .group-create-panel { border-radius: 16px; border-color: #f97316; }
+body.theme-ludique .group-create-actions .btn-play { border-radius: 20px; }
 
 /* ==========================================================================
    12. CONFETTIS
