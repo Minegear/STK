@@ -1192,6 +1192,116 @@ body.theme-ludique .tri-tableau::-webkit-scrollbar-track { background: #fff3e0; 
 body.theme-ludique .tri-tableau::-webkit-scrollbar-thumb { background: #f97316; border-color: #fff3e0; }
 body.theme-ludique .tri-tableau::-webkit-scrollbar-thumb:hover { background: #ea580c; }
 
+/* Variante "une étiquette à la fois" : tableau à gauche (2/3), étiquette/image à glisser à droite (1/3) */
+.tri-unique-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    max-width: 1100px;
+    margin: 20px auto;
+}
+
+.tri-unique-table-col {
+    flex: 2 1 0;
+    min-width: 0;
+}
+
+/* Ici les catégories sont des lignes empilées verticalement, pas des colonnes côte à côte */
+.tri-unique-table-col .tri-tableau {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    max-width: 100%;
+    margin: 0;
+    overflow: visible;
+    padding-bottom: 0;
+}
+
+.tri-unique-table-col .tri-colonne {
+    flex: 0 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 70px;
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    padding: 10px 14px;
+}
+
+.tri-unique-table-col .tri-colonne-header {
+    flex: 0 0 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0;
+    padding: 0 14px 0 0;
+    border-bottom: none;
+    border-right: 2px solid var(--accent-blue);
+}
+
+.tri-unique-table-col .tri-colonne-body {
+    flex: 1;
+    align-content: center;
+}
+
+@media (max-width: 480px) {
+    .tri-unique-table-col .tri-colonne { flex-direction: column; align-items: stretch; }
+    .tri-unique-table-col .tri-colonne-header {
+        border-right: none;
+        border-bottom: 2px solid var(--accent-blue);
+        padding: 0 0 8px;
+        margin-bottom: 8px;
+    }
+}
+
+.tri-unique-staging-col {
+    flex: 1 1 0;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+/* Zone de droite : contient l'étiquette/image en cours (une seule au repos, plusieurs si l'utilisateur en ressort des colonnes) */
+.tri-unique-staging {
+    width: 100%;
+    min-height: 160px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: center;
+    gap: 14px;
+    padding: 16px;
+    box-sizing: border-box;
+    border: 3px dashed var(--accent-blue);
+    border-radius: 16px;
+    background: rgba(59, 130, 246, 0.05);
+}
+
+/* Aperçu réduit et grisé du prochain élément, non interactif */
+.tri-unique-preview {
+    align-self: flex-end;
+    min-height: 0;
+}
+.tri-unique-preview-media {
+    opacity: 0.45;
+    filter: grayscale(60%);
+    pointer-events: none;
+    transform: scale(0.75);
+    transform-origin: bottom right;
+}
+.tri-unique-preview-media.image-carte { width: 80px; }
+.tri-unique-preview-media.etiquette { font-size: 0.9rem; }
+
+@media (max-width: 760px) {
+    .tri-unique-layout { flex-direction: column; }
+    .tri-unique-staging-col { width: 100%; }
+}
+
+body.theme-sombre .tri-unique-staging { background: rgba(96,165,250,0.1); border-color: #60a5fa; }
+body.theme-ludique .tri-unique-staging { border-color: #f97316; background: rgba(249,115,22,0.08); }
+
 /* Carte-image façon "timbre" : cadre blanc, ombre, liseré ondulé (pointillé) tout autour de l'image */
 .image-carte {
     position: relative;

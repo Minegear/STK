@@ -585,6 +585,7 @@ function startCategory(catId) {
                 else if (category.type === 'texte_trous_etiquettes') loadExerciseTexteEtiquettesListe(category);
                 else if (category.type === 'grille_tri') {
                     if (category.affichage === 'phrase') loadExerciseGrilleTriPhrase(category, 0);
+                    else if (category.affichage === 'unique') loadExerciseGrilleTriUnique(category);
                     else loadExerciseGrilleTri(category);
                 }
                 else if (category.type === 'reponse_libre_negation') loadExerciseNegation(category, 0);
@@ -2100,6 +2101,169 @@ function validateTriPhrase() {
     }, 1200);
 }
 
+// --- TABLEAU DE TRI — VARIANTE "UNE ÉTIQUETTE À LA FOIS" (ex. Trier par article) ---
+// Tableau à gauche (comme loadExerciseGrilleTri), une seule étiquette/image à glisser (ou
+// cliquer) à droite ; la suivante n'apparaît que lorsque la zone de droite est vide, avec un
+// aperçu réduit et grisé (non interactif) de celle d'après
+
+let _triUniqueQueue = [];
+
+function loadExerciseGrilleTriUnique(category) {
+    currentCategory = category;
+    currentStep = 0;
+    currentExo = null;
+    selectedTriIndex = null;
+    const container = document.getElementById('exercise-container');
+
+    consecutiveErrors = 0;
+    isClickable = true;
+    updateBreadcrumb(category);
+
+    currentScore = 0;
+    totalQuestions = 0;
+    totalErrors = 0;
+    totalWrongSelected = 0;
+    totalMissed = 0;
+    currentSessionId = crypto.randomUUID();
+    startTime = Date.now();
+
+    _triUniqueQueue = shuffleArray(category.questions.map((q, i) => ({ i, mot: q.mot, image: q.image })));
+
+    const colonnesHtml = category.colonnes.map(col => `
+        <div class="tri-colonne" id="tri-col-${col.id}"
+             ondragover="event.preventDefault()"
+             ondragenter="event.preventDefault(); this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="handleTriUniqueColDrop(event, '${col.id}')"
+             onclick="handleTriUniqueColClick('${col.id}')">
+            <div class="tri-colonne-header">${col.label}</div>
+            <div class="tri-colonne-body"></div>
+        </div>`).join('');
+
+    let html = `<div class="help-button-container"><button class="btn-help" onclick="openConsigneModal('${category.id}')">?</button></div>`;
+    html += `
+        <div class="tri-unique-layout">
+            <div class="tri-unique-table-col">
+                <div class="tri-tableau">${colonnesHtml}</div>
+            </div>
+            <div class="tri-unique-staging-col">
+                <div class="tri-unique-staging" id="tri-unique-staging"
+                     ondragover="event.preventDefault()"
+                     ondrop="handleTriUniqueStagingDrop(event)"
+                     onclick="handleTriUniqueStagingClick(event)"></div>
+                <div class="tri-unique-preview" id="tri-unique-preview"></div>
+            </div>
+        </div>
+        <button class="btn-play btn-validate" id="btn-valider-tri" onclick="validateTri()" disabled>Valider</button>`;
+
+    container.innerHTML = html;
+    revealNextTriUniqueItem();
+}
+
+function triUniqueItemHtml(i, mot, image) {
+    return image
+        ? `<div class="image-carte" id="etqt-${i}" draggable="true"
+                 ondragstart="handleTriUniqueDragStart(event, ${i})"
+                 onclick="selectEtiquetteTri(${i})">
+                <img src="${image}" alt="">
+            </div>`
+        : `<div class="etiquette" id="etqt-${i}" draggable="true"
+             ondragstart="handleTriUniqueDragStart(event, ${i})"
+             onclick="selectEtiquetteTri(${i})">
+            <span class="etiquette-label">${mot}</span>
+        </div>`;
+}
+
+// Ne révèle un nouvel élément que lorsque la zone de droite est vide
+function revealNextTriUniqueItem() {
+    const staging = document.getElementById('tri-unique-staging');
+    if (!staging) return;
+    if (staging.children.length === 0 && _triUniqueQueue.length > 0) {
+        const { i, mot, image } = _triUniqueQueue.shift();
+        staging.insertAdjacentHTML('beforeend', triUniqueItemHtml(i, mot, image));
+    }
+    updateTriUniquePreview();
+    checkTriUniqueComplete();
+}
+
+// Aperçu réduit et grisé du prochain élément à venir, purement indicatif
+function updateTriUniquePreview() {
+    const previewEl = document.getElementById('tri-unique-preview');
+    if (!previewEl) return;
+    const next = _triUniqueQueue[0];
+    previewEl.innerHTML = !next ? '' : (next.image
+        ? `<div class="image-carte tri-unique-preview-media"><img src="${next.image}" alt=""></div>`
+        : `<div class="etiquette tri-unique-preview-media"><span class="etiquette-label">${next.mot}</span></div>`);
+}
+
+function checkTriUniqueComplete() {
+    const staging = document.getElementById('tri-unique-staging');
+    const btn = document.getElementById('btn-valider-tri');
+    if (btn) btn.disabled = !staging || staging.children.length > 0 || _triUniqueQueue.length > 0;
+}
+
+function handleTriUniqueDragStart(e, i) {
+    if (!isClickable) { e.preventDefault(); return; }
+    document.querySelectorAll('.etiquette-selected').forEach(el => el.classList.remove('etiquette-selected'));
+    selectedTriIndex = null;
+    draggedEtiquetteIndex = i;
+    e.dataTransfer.setData('text/plain', i);
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function placeTriUniqueItem(i, colId) {
+    const body = document.querySelector(`#tri-col-${colId} .tri-colonne-body`);
+    const el = document.getElementById(`etqt-${i}`);
+    if (!body || !el) return;
+    el.classList.remove('etiquette-selected');
+    body.appendChild(el);
+    revealNextTriUniqueItem();
+}
+
+function handleTriUniqueColDrop(e, colId) {
+    e.preventDefault();
+    const col = document.getElementById(`tri-col-${colId}`);
+    if (col) col.classList.remove('drag-over');
+    if (!isClickable) return;
+    const raw = e.dataTransfer.getData('text/plain');
+    const i = raw !== '' ? parseInt(raw) : draggedEtiquetteIndex;
+    if (i !== null && !isNaN(i)) placeTriUniqueItem(i, colId);
+}
+
+function handleTriUniqueColClick(colId) {
+    if (!isClickable) return;
+    if (selectedTriIndex !== null) {
+        placeTriUniqueItem(selectedTriIndex, colId);
+        selectedTriIndex = null;
+    }
+}
+
+// Sortir une étiquette/image d'une colonne la renvoie dans la zone de droite, sans en révéler une nouvelle
+function handleTriUniqueStagingDrop(e) {
+    e.preventDefault();
+    if (!isClickable) return;
+    const raw = e.dataTransfer.getData('text/plain');
+    const i = raw !== '' ? parseInt(raw) : draggedEtiquetteIndex;
+    if (i === null || isNaN(i)) return;
+    const el = document.getElementById(`etqt-${i}`);
+    const staging = document.getElementById('tri-unique-staging');
+    if (!el || !staging || el.parentElement === staging) return;
+    staging.appendChild(el);
+    checkTriUniqueComplete();
+}
+
+function handleTriUniqueStagingClick(e) {
+    if (!isClickable) return;
+    if (e.target.closest('.etiquette, .image-carte')) return;
+    if (selectedTriIndex !== null) {
+        const el = document.getElementById(`etqt-${selectedTriIndex}`);
+        const staging = document.getElementById('tri-unique-staging');
+        if (el && staging && el.parentElement !== staging) staging.appendChild(el);
+        selectedTriIndex = null;
+        checkTriUniqueComplete();
+    }
+}
+
 // --- LANGUE ÉCRITE — RÉPONSE LIBRE (ex. négation) ---
 // Réponse libre notée par points partiels selon des critères grammaticaux (ne/n', pas, sujet)
 
@@ -3016,6 +3180,7 @@ function restartCurrentExercise() {
             loadExerciseTexteEtiquettesListe(currentCategory);
         } else if (currentCategory.type === 'grille_tri') {
             if (currentCategory.affichage === 'phrase') loadExerciseGrilleTriPhrase(currentCategory, 0);
+            else if (currentCategory.affichage === 'unique') loadExerciseGrilleTriUnique(currentCategory);
             else loadExerciseGrilleTri(currentCategory);
         } else if (currentCategory.type === 'reponse_libre_negation') {
             loadExerciseNegation(currentCategory, 0);
