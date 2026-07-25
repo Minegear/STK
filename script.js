@@ -1833,12 +1833,12 @@ function loadExerciseGrilleTri(category) {
     const bankHtml = shuffledItems.map(({ i, mot, image }) => image
         ? `<div class="image-carte" id="etqt-${i}" draggable="true"
                  ondragstart="handleTriDragStart(event, ${i})"
-                 onclick="selectEtiquetteTri(${i})">
+                 onclick="event.stopPropagation(); selectEtiquetteTri(${i})">
                 <img src="${image}" alt="">
             </div>`
         : `<div class="etiquette" id="etqt-${i}" draggable="true"
              ondragstart="handleTriDragStart(event, ${i})"
-             onclick="selectEtiquetteTri(${i})">
+             onclick="event.stopPropagation(); selectEtiquetteTri(${i})">
             <span class="etiquette-label">${mot}</span>
         </div>`).join('');
 
@@ -2030,12 +2030,12 @@ function loadExerciseGrilleTriPhrase(category, phraseIndex) {
     const bankHtml = shuffledItems.map(({ i, mot, image }) => image
         ? `<div class="image-carte" id="etqt-${i}" draggable="true"
                  ondragstart="handleTriDragStart(event, ${i})"
-                 onclick="selectEtiquetteTri(${i})">
+                 onclick="event.stopPropagation(); selectEtiquetteTri(${i})">
                 <img src="${image}" alt="">
             </div>`
         : `<div class="etiquette" id="etqt-${i}" draggable="true"
              ondragstart="handleTriDragStart(event, ${i})"
-             onclick="selectEtiquetteTri(${i})">
+             onclick="event.stopPropagation(); selectEtiquetteTri(${i})">
             <span class="etiquette-label">${mot}</span>
         </div>`).join('');
 
@@ -2164,12 +2164,12 @@ function triUniqueItemHtml(i, mot, image) {
     return image
         ? `<div class="image-carte" id="etqt-${i}" draggable="true"
                  ondragstart="handleTriUniqueDragStart(event, ${i})"
-                 onclick="selectEtiquetteTri(${i})">
+                 onclick="event.stopPropagation(); selectEtiquetteTri(${i})">
                 <img src="${image}" alt="">
             </div>`
         : `<div class="etiquette" id="etqt-${i}" draggable="true"
              ondragstart="handleTriUniqueDragStart(event, ${i})"
-             onclick="selectEtiquetteTri(${i})">
+             onclick="event.stopPropagation(); selectEtiquetteTri(${i})">
             <span class="etiquette-label">${mot}</span>
         </div>`;
 }
